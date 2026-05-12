@@ -234,6 +234,112 @@
     h1 { font-size: 26px; }
     .timer { font-size: 22px; }
   }
+
+  /* === Tab Navigation === */
+  .tab-nav {
+    display: flex; gap: 4px; margin-bottom: 16px;
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 10px; padding: 6px;
+  }
+  .tab-btn {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500;
+    letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-dim);
+    background: transparent; border: 1px solid transparent;
+    padding: 8px 16px; border-radius: 6px; cursor: pointer;
+    transition: all 0.15s; flex: 1; text-align: center;
+  }
+  .tab-btn:hover { color: var(--accent); }
+  .tab-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* === Glossary / Ορολογία === */
+  .glossary-controls {
+    display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center;
+  }
+  .glossary-search {
+    font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text);
+    background: var(--bg-card); border: 1px solid var(--border-strong);
+    padding: 8px 12px; border-radius: 6px; flex: 1; min-width: 200px;
+    outline: none; transition: border-color 0.15s;
+  }
+  .glossary-search:focus { border-color: var(--accent); }
+  .cat-filter {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500;
+    letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-dim);
+    background: transparent; border: 1px solid var(--border); padding: 6px 10px;
+    border-radius: 5px; cursor: pointer; transition: all 0.15s;
+  }
+  .cat-filter:hover { border-color: var(--accent); color: var(--accent); }
+  .cat-filter.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+  .glossary-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 10px; margin-bottom: 12px;
+  }
+  .term-card {
+    border: 1px solid var(--border); background: var(--bg-card);
+    border-radius: 10px; padding: 14px 16px; transition: border-color 0.15s;
+  }
+  .term-card:hover { border-color: var(--border-strong); }
+  .term-card.hidden { display: none; }
+  .term-name {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700;
+    color: var(--accent); margin-bottom: 6px;
+  }
+  .term-def { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+  .term-cat {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--text-muted); margin-top: 8px; text-transform: uppercase;
+    letter-spacing: 0.1em; display: inline-block;
+    background: var(--bg-elev); padding: 2px 6px; border-radius: 3px;
+  }
+  .glossary-empty { color: var(--text-muted); font-size: 14px; text-align: center; padding: 48px; }
+
+  /* === Cheat Sheet === */
+  .cs-section {
+    margin-bottom: 32px;
+  }
+  .cs-section-h {
+    font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600;
+    color: var(--accent); margin-bottom: 12px;
+    padding-bottom: 6px; border-bottom: 1px solid var(--border);
+  }
+  .cs-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 12px;
+  }
+  .cs-card {
+    border: 1px solid var(--border); background: var(--bg-card);
+    border-radius: 10px; padding: 14px 16px; overflow-x: auto;
+  }
+  .cs-card h4 {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--text-muted); margin-bottom: 10px;
+    padding-bottom: 6px; border-bottom: 1px dashed var(--border);
+  }
+  .cs-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 4px; }
+  .cs-table th {
+    text-align: left; padding: 5px 8px;
+    background: var(--bg-elev); color: var(--text);
+    font-weight: 600; border: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  }
+  .cs-table td {
+    padding: 5px 8px; border: 1px solid var(--border);
+    color: var(--text-dim); vertical-align: top; font-size: 12px; line-height: 1.4;
+  }
+  .cs-table td.k { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; }
+  .cs-table td.g { color: var(--done); font-weight: 600; }
+  .cs-table td.r { color: var(--crit); }
+  .cs-table td.y { color: var(--warn); }
+  .hl { background: #ff6b3533; color: var(--accent); border-radius: 2px; padding: 0 1px; }
+  .search-count {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--text-muted); padding: 6px 10px; border-radius: 5px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    white-space: nowrap;
+  }
 </style>
 </head>
 <body>
@@ -260,8 +366,16 @@
     </div>
   </header>
 
+  <div class="tab-nav">
+    <button class="tab-btn active" data-tab="questions">Questions</button>
+    <button class="tab-btn" data-tab="glossary">Ορολογία</button>
+    <button class="tab-btn" data-tab="cheatsheet">Cheat Sheet</button>
+  </div>
+
+  <div class="tab-pane active" id="tab-questions">
   <div class="controls-bar">
-    <input type="text" class="search-input" id="searchInput" placeholder="Search questions...">
+    <input type="text" class="search-input" id="searchInput" placeholder="Search questions &amp; answers...">
+    <span class="search-count" id="searchCount" style="display:none"></span>
     <button class="filter-btn active" data-filter="all">All</button>
     <button class="filter-btn" data-filter="crit">Must-know</button>
     <button class="filter-btn" data-filter="high">High</button>
@@ -287,6 +401,28 @@
       <li><strong>Don't oversell microservices.</strong> SYNTAX clients run mainframes. Modular monolith + strategic extractions is more honest than "rewrite everything as microservices".</li>
     </ul>
   </div>
+  </div><!-- /tab-pane#questions -->
+
+  <div class="tab-pane" id="tab-glossary">
+    <div class="glossary-controls">
+      <input type="text" class="glossary-search" id="glossarySearch" placeholder="Search terminology...">
+      <span class="search-count" id="glossaryCount"></span>
+      <button class="cat-filter active" data-cat="all">All</button>
+      <button class="cat-filter" data-cat="Distributed Systems">Distributed</button>
+      <button class="cat-filter" data-cat="Resilience">Resilience</button>
+      <button class="cat-filter" data-cat="Architecture Patterns">Patterns</button>
+      <button class="cat-filter" data-cat="Data">Data</button>
+      <button class="cat-filter" data-cat="DevOps">DevOps</button>
+      <button class="cat-filter" data-cat="Security">Security</button>
+    </div>
+    <div class="glossary-grid" id="glossaryGrid"></div>
+    <div class="glossary-empty" id="glossaryEmpty" style="display:none">No terms match your search.</div>
+  </div><!-- /tab-pane#glossary -->
+
+  <div class="tab-pane" id="tab-cheatsheet">
+    <div id="cheatsheetContent"></div>
+  </div><!-- /tab-pane#cheatsheet -->
+
 </div>
 
 <script>
@@ -1314,6 +1450,150 @@ logging:
       ]
     }
   ]
+},
+{
+  title: "Security, API Design & Observability",
+  duration: "45 min",
+  sections: [
+    {
+      h: "API Security — OAuth2, OIDC, JWT",
+      items: [
+        {q: "Explain OAuth2 flows: Authorization Code + PKCE, Client Credentials, Device Code. When do you use each in an enterprise microservices context?", tag:"crit", a:`<p>OAuth2 is the authorization layer for virtually every enterprise API today. Knowing the flows and their threat models is non-negotiable for a Senior Architect.</p><hr><h4>Authorization Code + PKCE (the browser / mobile flow)</h4><p>The gold standard for user-facing apps. The browser never handles the client secret — instead it uses a cryptographic challenge.</p><pre><code>1. App generates code_verifier (random 64 bytes, base64url)
+2. App sends code_challenge = SHA256(code_verifier), base64url-encoded
+3. Redirect user to /authorize?response_type=code&code_challenge=...
+4. User authenticates at IdP (Keycloak, Entra ID, Okta)
+5. IdP redirects back with authorization code
+6. App POSTs code + code_verifier to /token
+7. IdP verifies: SHA256(code_verifier) == stored challenge → issue tokens</code></pre><strong>Why PKCE?</strong> Prevents authorization code interception attacks. Even if an attacker intercepts the code in step 5, they can't exchange it without code_verifier. Required for public clients (SPAs, mobile). Recommended for confidential clients too.<br><strong>When to use:</strong> any flow where a human user authenticates. Spring Boot back-end for front-end pattern: browser talks to BFF, BFF does the OAuth dance with the IdP, issues a session cookie to the browser, forwards requests with bearer token to downstream APIs.<hr><h4>Client Credentials (the machine-to-machine flow)</h4><pre><code>POST /token
+Content-Type: application/x-www-form-urlencoded
+grant_type=client_credentials&client_id=svc-a&client_secret=xxx&scope=payment:read</code></pre><p>Service A uses its own identity to call Service B. No user involved.</p><strong>Key decisions:</strong><ul><li><strong>Rotate secrets</strong>: Client secrets are long-lived credentials. Rotate them on a schedule (monthly/quarterly) via your secrets management tool (Vault, AWS Secrets Manager). Token TTLs should be short (5-15 min) to bound exposure.</li><li><strong>Mutual TLS (mTLS) as alternative</strong>: Instead of client secret, the service presents a client certificate. Stronger, no secret to rotate. Preferred in high-security environments. Service mesh (Istio) can automate certificate issuance.</li><li><strong>Scope granularity</strong>: Issue minimum necessary scopes. Service A gets <code>payment:read</code>, not <code>*</code>.</li></ul><strong>When to use:</strong> backend-to-backend calls, scheduled jobs, batch processors, internal microservices APIs.<hr><h4>Device Code (IoT / headless devices)</h4><pre><code>1. Device requests user_code from IdP
+2. Device displays user_code + verification_uri to user
+3. User opens browser, goes to verification_uri, enters user_code, authenticates
+4. Device polls /token endpoint until user approves
+5. Token issued to device</code></pre><strong>When to use:</strong> smart TVs, IoT devices, CLI tools (like GH CLI) where you can't open a browser. Less common in typical enterprise but relevant for edge/embedded scenarios.<hr><h4>Token validation — what every resource server must do</h4><pre><code>@Bean
+SecurityFilterChain api(HttpSecurity http) throws Exception {
+  http.oauth2ResourceServer(rs -> rs.jwt(jwt -> jwt
+    .jwkSetUri("https://idp.acme.com/.well-known/jwks.json")
+    .jwtAuthenticationConverter(customClaims())));
+  return http.build();
+}
+// Spring Security fetches JWKs, caches them, validates signature automatically</code></pre><strong>Validations that matter:</strong><ul><li><code>iss</code> (issuer) — must match your IdP</li><li><code>aud</code> (audience) — must contain your service's ID</li><li><code>exp</code> (expiry) — must not be in the past</li><li><code>nbf</code> (not before) — if present</li><li>Signature — via JWKS endpoint</li><li>Scope/roles — enforce authorization, not just authentication</li></ul><span class="gotcha">Common mistake:</span> validating only the signature but not <code>iss</code> or <code>aud</code>. A valid token issued for Service A can be replayed against Service B if audience validation is missing.<hr><span class="tradeoff">SYNTAX context:</span> enterprise IdPs common in client environments: Azure Active Directory / Entra ID, Keycloak, PingFederate. Ensure Spring Security oauth2ResourceServer config targets the right issuer per environment (dev/staging/prod — different realms). Externalize issuer URL to config.`},
+        {q: "JWT security: alg:none attack, weak HMAC secret, kid header injection. How do you validate a JWT defensively?", tag:"crit", a:`<p>JWTs are simple to use and easy to misuse. The attacks exploit incorrect validation logic in implementations.</p><hr><h4>Attack 1: alg:none</h4><p>JWT header contains <code>"alg":"none"</code>. This tells the library: "this token has no signature — don't verify." Some naive libraries actually honor this, accepting any unsigned token.</p><pre><code>// Attacker crafts:
+header: {"alg":"none","typ":"JWT"}
+payload: {"sub":"admin","roles":["ADMIN"],"exp":9999999999}
+signature: (empty)</code></pre><strong>Fix:</strong> Always specify the exact algorithms you accept. Never accept "none". With JJWT:<pre><code>Jwts.parserBuilder()
+  .setSigningKey(publicKey)
+  .setAllowedClockSkewSeconds(30)
+  .build()
+  .parseClaimsJws(token); // NOT parseClaimsJwt — enforces signature</code></pre><strong>With Spring Security:</strong> the default oauth2ResourceServer JWT config only accepts algorithms from the JWKS endpoint — "none" is never in JWKS. Spring is safe by default here; rolling your own parser is the risk.<hr><h4>Attack 2: Weak HMAC secret</h4><p>If your JWT uses HS256 (symmetric), the secret is both signing and verification key. An attacker who can guess or brute-force the secret can forge arbitrary tokens.</p><p>Seen in the wild: secret = "secret", "password", "1234", the app name. JWT-cracker tools exist specifically for this.</p><strong>Fix:</strong><ul><li>Use asymmetric signatures (RS256 or ES256). Public key for verification, private key stored securely (HSM, Vault).</li><li>If you must use HS256: minimum 256-bit random secret, managed via secrets manager, rotated periodically.</li><li>Never embed JWT secrets in source code or Docker images.</li></ul><hr><h4>Attack 3: kid (Key ID) header injection</h4><p>JWT header contains <code>"kid"</code> which tells the verifier which key to use. If the verifier looks up the key by constructing a filename or SQL query from kid, an attacker can inject:</p><pre><code>{"alg":"HS256","kid":"../../dev/null"}
+// HMAC secret = contents of /dev/null = empty string → easy to forge
+
+{"alg":"RS256","kid":"' OR 1=1 --"}
+// SQL injection into key lookup</code></pre><strong>Fix:</strong> Never dynamically look up keys from unvalidated header values. Use a fixed key registry, or use the JWKS endpoint URL pattern where kid is looked up against a fetched list from a trusted source (the IdP).<hr><h4>Defensive JWT validation checklist</h4><ol><li><strong>Algorithm allowlist</strong> — explicit list, never "any"</li><li><strong>Signature</strong> — always verify</li><li><strong>Issuer (iss)</strong> — validate against known issuer(s)</li><li><strong>Audience (aud)</strong> — validate against this service's expected audience</li><li><strong>Expiry (exp)</strong> — reject expired tokens with small clock skew tolerance (&lt;30s)</li><li><strong>Not Before (nbf)</strong> — if present, honor it</li><li><strong>Token binding / revocation</strong> — for sensitive ops, check token is not in revocation list (introspect endpoint or jti denylist)</li></ol><hr><span class="tradeoff">Architect-level framing:</span> "The safest JWT setup for microservices: RS256 asymmetric keys, IdP serves public keys via JWKS endpoint, services fetch and cache JWKS, Spring Security auto-validates. Private key stays in HSM or Vault, never in application code. Token TTL short (5-15 min for access tokens) to limit revocation window."`},
+        {q: "OWASP API Security Top 10 — walk through each and give a mitigation for a Spring Boot REST API.", tag:"high", a:`<p>OWASP API Security Top 10 (2023 edition) is the canonical reference for API threats. A senior architect should be able to talk through all 10 without notes.</p><hr><table><tr><th>Risk</th><th>What it is</th><th>Spring Boot mitigation</th></tr><tr><td class="k">API1: BOLA</td><td>Broken Object Level Authorization — accessing other users' resources by manipulating IDs (e.g. /orders/<strong>999</strong> when you own order 998)</td><td>Always verify ownership: <code>order.userId == currentUser.id</code> before returning. Use Spring Security method-level: <code>@PreAuthorize("#userId == authentication.principal.id")</code></td></tr><tr><td class="k">API2: Broken Auth</td><td>Weak/missing authentication mechanisms, exposed tokens</td><td>Enforce JWT validation on every endpoint (except health). Validate iss, aud, exp, scope. Short token TTLs. HTTPS only.</td></tr><tr><td class="k">API3: BOPLA</td><td>Broken Object Property Level Auth — API returns or accepts more properties than the user should see/set (mass assignment, over-exposure)</td><td>Use DTOs not entities in API layer. Never accept arbitrary JSON onto an entity. Jackson's <code>@JsonIgnoreProperties</code>. Validate what the user is allowed to modify.</td></tr><tr><td class="k">API4: Unrestricted Resource Consumption</td><td>Missing rate limiting, no pagination limits, huge payloads</td><td>Rate limiting via Bucket4j or API Gateway. Paginate with max page size enforcement. Validate request body size (<code>spring.servlet.multipart.max-file-size</code>). Timeout on long operations.</td></tr><tr><td class="k">API5: BFLA</td><td>Broken Function Level Authorization — accessing admin/privileged endpoints without the right role</td><td><code>@PreAuthorize("hasRole('ADMIN')")</code> on sensitive endpoints. Defense-in-depth: method-level security + URL security + audit logging. Don't rely solely on UI hiding buttons.</td></tr><tr><td class="k">API6: Unrestricted Access to Sensitive Business Flows</td><td>Abusing legitimate business logic at scale (credential stuffing, mass account creation, coupon abuse)</td><td>Device fingerprinting, CAPTCHA on sensitive flows. Rate limiting per-user, per-IP, per-device. Bot detection. Behavioral anomaly detection.</td></tr><tr><td class="k">API7: SSRF</td><td>Server-Side Request Forgery — attacker causes your server to make requests to internal services</td><td>Validate/allowlist URLs before fetching. Block private IP ranges (127.x, 10.x, 172.16.x, 192.168.x). Use dedicated egress proxy for external calls. IMDSv2 on AWS.</td></tr><tr><td class="k">API8: Security Misconfiguration</td><td>Default creds, verbose error responses, unnecessary endpoints, outdated libraries</td><td>Custom error handler returning generic messages. Disable Actuator endpoints in prod (or secure with separate auth). Dependency scanning (Dependabot, OWASP dependency-check). Spring Boot Actuator: <code>management.endpoints.web.exposure.include=health,info</code> only.</td></tr><tr><td class="k">API9: Improper Inventory Management</td><td>Undocumented APIs, old API versions still live, shadow endpoints</td><td>Auto-generate API docs (Springdoc / OpenAPI). API versioning strategy. Decommission old versions with deprecation notices. Track all exposed endpoints centrally.</td></tr><tr><td class="k">API10: Unsafe Consumption of APIs</td><td>Trusting 3rd-party API responses blindly, no validation of external data</td><td>Validate all data from external APIs before using. Don't pass raw external data to DB queries or template engines. Trust boundaries: treat external data as untrusted input.</td></tr></table><hr><span class="tradeoff">Senior framing:</span> "BOLA (#1) is the most common and most devastating — it's an authorization bug that's invisible in unit tests and only appears when users know to try adjacent IDs. I make authorization checks a code review checklist item, not an afterthought."`}
+      ]
+    },
+    {
+      h: "Observability — Metrics, Logs, Traces",
+      items: [
+        {q: "What's the difference between monitoring and observability? Explain the three pillars and how they compose.", tag:"crit", a:`<p>This distinction matters because it changes how you instrument systems and how you debug novel failures.</p><hr><strong>Monitoring</strong>: checking known metrics against known thresholds. "CPU > 80%? Page someone." You define what to watch upfront. Works well for known failure modes.<br><strong>Observability</strong>: the ability to understand a system's internal state purely from its external outputs, <em>without modifying the system</em>. You can ask arbitrary questions about what's happening, even questions you didn't anticipate when building it.<p>The difference is most visible in <strong>novel failures</strong>: a new type of production incident you've never seen before. Monitoring says "an alarm fired." Observability says "let me explore what's happening and why."</p><hr><h4>Pillar 1: Metrics</h4><p>Numeric measurements aggregated over time. Efficient to store, fast to query, poor for context.</p><ul><li>RED method: <strong>R</strong>ate (requests/sec), <strong>E</strong>rrors (error rate), <strong>D</strong>uration (latency).</li><li>USE method (for resources): <strong>U</strong>tilization, <strong>S</strong>aturation, <strong>E</strong>rrors.</li><li>Spring Boot + Micrometer → Prometheus scrape → Grafana dashboards.</li><li>Business metrics alongside infrastructure: orders/sec, payment success rate, fraud flags/hour — these are the real signal.</li></ul><strong>Alert on symptoms, not causes:</strong> "Error rate > 1%" is a symptom. "CPU > 80%" is a cause. Alerting on symptoms catches real user impact; alerting on causes generates noise.<hr><h4>Pillar 2: Logs</h4><p>Structured, contextual records of events. Rich for debugging, expensive to store and query at scale.</p><ul><li><strong>Structured logging</strong> (JSON) is mandatory. Unstructured text logs are unsearchable at scale.</li><li>Every log line should include: timestamp, service name, trace ID, span ID, request ID, relevant entity IDs (user_id, order_id), level, message.</li><li>Correlation ID: attach a unique request ID at entry (API gateway or first service), propagate through all downstream calls via headers (<code>X-Request-Id</code>). Log it everywhere. Lets you reconstruct one request across all services.</li><li>Log levels: use WARN/ERROR sparingly — every ERROR should be actionable. DEBUG off in production (or sampling enabled for subset).</li></ul><pre><code>// With SLF4J + structured logging:
+log.info("Payment processed", kv("orderId", orderId), kv("amount", amount),
+  kv("userId", userId), kv("traceId", MDC.get("traceId")));</code></pre><hr><h4>Pillar 3: Traces</h4><p>End-to-end records of a request as it traverses multiple services. Each service adds a span with its timing and metadata.</p><ul><li><strong>Trace ID</strong>: unique per request, shared across all services.</li><li><strong>Span</strong>: one unit of work (one service call, one DB query). Has parent span, start/end time, attributes, events.</li><li>OpenTelemetry (OTel) is the standard. Vendor-neutral. Export to Jaeger, Tempo, Zipkin, or commercial (Datadog, Dynatrace).</li><li>Spring Boot 3 + Micrometer Tracing: auto-instruments HTTP, JDBC, Kafka, Feign clients.</li></ul><hr><h4>How the three pillars compose</h4><ol><li>Metrics alert fires: "p99 latency spiked to 2s."</li><li>Drill into traces: filter for requests with latency > 500ms. Find a pattern: all slow requests hit a specific downstream service.</li><li>Drill into logs for those traces: find "DB connection timeout" in the slow traces. Root cause identified.</li></ol><p>Without all three, you'd be guessing at step 2 and searching unstructured text at step 3.</p><hr><span class="tradeoff">Architect's framing:</span> "The goal is to ask 'what is happening and why' in production at 3am without needing a redeployment, a code change, or help from the engineer who wrote the service. Observability investment pays off most in novel failure modes — which are exactly the ones that cause the biggest outages."`},
+        {q: "Define SLO, SLI, SLA, error budget. Build an example for a payment API and explain how to use the error budget operationally.", tag:"crit", a:`<p>These four terms form the reliability language that distinguishes site reliability engineering from traditional operations. Architects who understand them can have productive conversations with SRE, product, and business stakeholders.</p><hr><strong>SLI — Service Level Indicator</strong>: a precise measurement of some aspect of the service's behavior. The raw metric. Examples:<ul><li>Request success rate: (successful responses) / (total responses)</li><li>Latency: p99 of response time for all requests</li><li>Availability: fraction of time the service serves requests successfully</li></ul><strong>SLO — Service Level Objective</strong>: a target value or range for an SLI. A commitment to the team about how reliable the service should be. Examples:<ul><li>99.9% of payment requests succeed (per rolling 28 days)</li><li>p99 latency ≤ 300ms</li><li>Availability ≥ 99.5% per calendar month</li></ul><strong>SLA — Service Level Agreement</strong>: a contract between provider and customer with financial or legal consequences if SLOs are missed. SLO is your internal target; SLA is what you commit to externally. SLO should be tighter than SLA (buffer for the unexpected).<br><strong>Error Budget</strong>: 100% minus your SLO. The permissible amount of unreliability. If SLO = 99.9%, error budget = 0.1% of requests can fail per period. In a 28-day window: 0.1% × 28 days × 24h × 60min = ~40 minutes of downtime.<hr><h4>Payment API example</h4><table><tr><th>SLI</th><th>SLO</th><th>Error budget (28-day)</th></tr><tr><td>Success rate (HTTP 200/201)</td><td>99.95%</td><td>0.05% = ~20 min of full outage equivalent</td></tr><tr><td>p99 latency</td><td>≤ 500ms</td><td>1% of requests may exceed 500ms</td></tr><tr><td>Availability</td><td>99.9%</td><td>~40 min downtime per 28 days</td></tr></table><hr><h4>Using the error budget operationally</h4><strong>Budget is healthy (>50% remaining):</strong><ul><li>Green light for risky changes — new deploys, infrastructure migrations, experiments.</li><li>Velocity over reliability: product can ship fast, SRE can take risks to improve the platform.</li></ul><strong>Budget is burning fast (&lt;25% with >14 days left):</strong><ul><li>Slow down risky changes. Freeze or reduce deploy frequency until budget is clear.</li><li>SRE and dev focus on reliability fixes: root-cause incidents, improve test coverage, fix flaky dependencies.</li></ul><strong>Budget exhausted:</strong><ul><li>Feature freeze. Only reliability and bug fixes until next period.</li><li>Post-mortem mandatory for every SLO breach.</li><li>Review: was the SLO calibrated correctly? Is the error budget model matching reality?</li></ul><hr><h4>Implementation in Spring Boot</h4><pre><code>// Custom Micrometer metric for payment success rate:
+meterRegistry.counter("payment.result",
+  "status", response.isSuccessful() ? "success" : "failure",
+  "reason", response.getFailureReason()).increment();
+
+// Prometheus query for SLI:
+// rate(payment_result_total{status="success"}[5m])
+// / rate(payment_result_total[5m])</code></pre><hr><span class="tradeoff">Architect's framing:</span> "Error budgets change the conversation from 'we want zero downtime' (unachievable, causes paralysis) to 'how much reliability do we need to achieve our business goals?' A 99.9% SLO for an internal admin panel is probably over-engineered; the same SLO for a payment API might be under-engineered. The right SLO comes from business impact analysis, not from guessing."`},
+        {q: "OpenTelemetry — what is it, why does it matter, and how do you instrument a Spring Boot 3 app end-to-end?", tag:"high", a:`<p>OpenTelemetry (OTel) is the convergence of OpenCensus and OpenTracing into a single, vendor-neutral observability standard. It matters because it eliminates vendor lock-in for observability and provides a consistent API across languages.</p><hr><strong>What OTel provides:</strong><ul><li><strong>API</strong>: language-level interfaces for creating spans, metrics, logs.</li><li><strong>SDK</strong>: implementation of the API with configuration (sampling, export).</li><li><strong>Protocol (OTLP)</strong>: wire format for exporting telemetry to a collector.</li><li><strong>Collector</strong>: a standalone process that receives, processes, and exports telemetry to multiple backends simultaneously.</li><li><strong>Auto-instrumentation agents</strong>: Java agents that instrument frameworks without code changes.</li></ul><hr><h4>Spring Boot 3 instrumentation — the pragmatic path</h4><strong>Dependencies (pom.xml):</strong><pre><code>&lt;dependency&gt;
+  &lt;groupId&gt;io.micrometer&lt;/groupId&gt;
+  &lt;artifactId&gt;micrometer-tracing-bridge-otel&lt;/artifactId&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+  &lt;groupId&gt;io.opentelemetry&lt;/groupId&gt;
+  &lt;artifactId&gt;opentelemetry-exporter-otlp&lt;/artifactId&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+  &lt;groupId&gt;io.micrometer&lt;/groupId&gt;
+  &lt;artifactId&gt;micrometer-registry-prometheus&lt;/artifactId&gt;
+&lt;/dependency&gt;</code></pre><strong>application.yml:</strong><pre><code>management:
+  tracing:
+    sampling:
+      probability: 1.0   # 100% in dev; 0.1 (10%) in prod
+  otlp:
+    tracing:
+      endpoint: http://otel-collector:4318/v1/traces
+    metrics:
+      export:
+        url: http://otel-collector:4318/v1/metrics</code></pre><strong>What auto-instruments:</strong><ul><li>Spring MVC / WebFlux — incoming HTTP requests → spans with path, method, status</li><li>RestClient / WebClient — outgoing HTTP calls → child spans</li><li>JDBC / Spring Data — database queries → child spans with SQL</li><li>Spring Kafka — producer/consumer → spans with topic, offset</li><li>Scheduled tasks</li></ul><strong>Manual span creation for custom business logic:</strong><pre><code>@Autowired Tracer tracer;
+
+Span span = tracer.nextSpan().name("fraud-check").start();
+try (Tracer.SpanInScope ws = tracer.withSpan(span.start())) {
+  span.tag("userId", userId);
+  span.tag("amount", amount.toString());
+  return fraudService.evaluate(transaction);
+} catch (Exception ex) {
+  span.error(ex); throw ex;
+} finally {
+  span.end();
+}</code></pre><hr><h4>OTel Collector — the hub</h4><pre><code># otel-collector-config.yaml
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+processors:
+  batch: {}
+  resourcedetection:  # adds host, k8s labels automatically
+    detectors: [env, system, k8s_node]
+exporters:
+  prometheus:
+    endpoint: 0.0.0.0:8889
+  jaeger:
+    endpoint: jaeger:14250
+    tls:
+      insecure: true
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push</code></pre><p>Collector receives from all services → fans out to Prometheus (metrics), Jaeger/Tempo (traces), Loki (logs). Services have one export destination; backends are swappable.</p><hr><h4>Trace + log correlation</h4><p>Micrometer Tracing automatically populates MDC with <code>traceId</code> and <code>spanId</code>. With Logback JSON encoder, these appear in every log line. In Grafana: click a trace, see the correlated logs. Click a log, navigate to the trace. This is the killer feature of consistent observability.</p><hr><span class="tradeoff">Architect's framing:</span> "Before OTel, every vendor had a different SDK. Switching from Zipkin to Jaeger meant code changes. OTel separates instrumentation (in your code, once) from export (config, changeable without code). For SYNTAX with multiple client environments, this is significant: one instrumented service image, different collector configs per client."`}
+      ]
+    },
+    {
+      h: "API Design — Versioning, REST vs gRPC, Secrets",
+      items: [
+        {q: "REST vs gRPC vs GraphQL — concrete trade-offs and which to recommend for: public API, internal microservices, mobile client with varied data needs.", tag:"high", a:`<p>Protocol choice is an architectural decision that spans team ergonomics, performance, client ecosystem, and longevity. There's no universal answer — here's the decision framework.</p><hr><h4>REST (HTTP/JSON)</h4><strong>Pros:</strong><ul><li>Universal: every language, every HTTP client, every API gateway, every developer knows it.</li><li>Human-readable: easy to inspect with curl, Postman, browser devtools.</li><li>HTTP semantics map well to CRUD: GET/POST/PUT/DELETE, status codes, caching headers.</li><li>Standards mature: OpenAPI spec, versioning conventions well-established.</li></ul><strong>Cons:</strong><ul><li>Chatty: multiple round trips for complex data.</li><li>Over-fetching / under-fetching: one endpoint returns too much or too little.</li><li>No streaming (HTTP/1.1 at least); long-polling workarounds are messy.</li><li>Schema evolution requires versioning discipline.</li></ul><strong>Recommend for:</strong> public APIs where client variety and ecosystem matter most. Third-party developer experience. Anything that needs to be discoverable and debuggable by teams outside your org.<hr><h4>gRPC (HTTP/2 + Protobuf)</h4><strong>Pros:</strong><ul><li>Binary protocol: ~3-5x lower serialization overhead than JSON.</li><li>HTTP/2: multiplexing, full-duplex streaming, header compression.</li><li>Strong schema (proto files): types are enforced, generated client/server stubs in any language.</li><li>Streaming: client streaming, server streaming, bidirectional.</li><li>Contract-first: proto file is the API contract — hard to drift.</li></ul><strong>Cons:</strong><ul><li>Binary: can't inspect with curl; debugging requires tools (grpcurl, BloomRPC).</li><li>Limited browser support without grpc-web proxy layer.</li><li>Less mature ecosystem for REST-adjacent patterns (API gateways, OAuth via headers, etc.).</li><li>Schema evolution requires backward-compatibility discipline (protobuf field numbers).</li></ul><strong>Recommend for:</strong> internal service-to-service communication where both sides are under your control, low-latency is important, or you have high message throughput. Ideal for the "inner mesh" of microservices.<hr><h4>GraphQL</h4><strong>Pros:</strong><ul><li>Client specifies exactly what data it needs — eliminates over/under-fetching.</li><li>Single endpoint: one /graphql for everything; no N separate REST endpoints.</li><li>Excellent for mobile and BFF patterns: client can optimize queries for screen-specific needs.</li><li>Schema introspection: client can discover the schema programmatically.</li></ul><strong>Cons:</strong><ul><li>N+1 query problem inside GraphQL resolvers: if not using DataLoader, you'll hit your DB per-resolver call.</li><li>Caching harder: HTTP GET caching doesn't work; need custom cache at resolver level (persisted queries).</li><li>Authorization complexity: field-level authorization requires careful resolver-level enforcement.</li><li>Operational overhead: observability needs GraphQL-aware tools (operation names, not just endpoints).</li></ul><strong>Recommend for:</strong> mobile clients or SPAs with varied screen-specific data needs. BFF (Backend for Frontend) pattern. Aggregation layer over heterogeneous microservices.<hr><h4>Concrete answers to the question</h4><ul><li><strong>Public API:</strong> REST with OpenAPI spec. Developer experience trumps performance for public APIs.</li><li><strong>Internal microservices:</strong> gRPC. The performance and contract enforcement benefits are worth the learning curve when both sides are under your control.</li><li><strong>Mobile with varied data needs:</strong> GraphQL (BFF pattern). Different screens request different shapes of data; GraphQL eliminates endpoint proliferation.</li></ul><hr><span class="tradeoff">Architect's reality check:</span> "Many teams adopt gRPC or GraphQL prematurely. If your REST services are working and teams are productive, the migration cost rarely pays off short-term. I'd start REST, adopt gRPC for new high-throughput internal services, and consider GraphQL when mobile/BFF complexity is actually causing pain."`},
+        {q: "API versioning strategies: URI, header, content negotiation. Pick one and defend it for a long-lived enterprise API.", tag:"med", a:`<p>API versioning is a surprisingly religious topic. The right answer depends on what you optimize for: developer experience, cache-friendliness, or purist REST semantics.</p><hr><h4>Strategy 1: URI Versioning</h4><pre><code>GET /v1/payments/123
+GET /v2/payments/123</code></pre><strong>Pros:</strong><ul><li>Visible in logs, easily bookmarkable, trivially cache-able (URL is the cache key).</li><li>Easy to route: API gateway rule on path prefix.</li><li>No special client setup — curl just works.</li><li>Teams can run v1 and v2 simultaneously.</li></ul><strong>Cons:</strong><ul><li>Not "pure REST" — the URL should identify a resource, not a version of the API.</li><li>Proliferation: /v1, /v2, /v3 endpoints pile up if you don't decommission aggressively.</li></ul><h4>Strategy 2: Header Versioning</h4><pre><code>GET /payments/123
+Api-Version: 2</code></pre><strong>Pros:</strong><ul><li>URL identifies the resource cleanly.</li><li>Multiple versions per endpoint without path multiplication.</li></ul><strong>Cons:</strong><ul><li>Cannot cache at CDN/proxy level without cache-vary configuration.</li><li>Invisible in logs unless you specifically log headers.</li><li>Clients must remember to send the header — easier to forget than a URL.</li></ul><h4>Strategy 3: Content Negotiation (Accept header)</h4><pre><code>GET /payments/123
+Accept: application/vnd.acme.payment.v2+json</code></pre><strong>Pros:</strong><ul><li>Maximally REST-aligned per RFC 7231.</li></ul><strong>Cons:</strong><ul><li>Verbose, hard to explain to API consumers.</li><li>Poorly supported in some client libraries and API gateways.</li><li>Effectively unused in practice outside HATEOAS purists.</li></ul><hr><h4>My recommendation: URI versioning for enterprise APIs</h4><p>In enterprise consulting contexts:</p><ul><li>Multiple consumer teams (internal + external) need to find and use the API quickly.</li><li>CDN and API gateway caching is usually required.</li><li>API documentation tooling (OpenAPI, Swagger UI) works best with URL-based versioning.</li><li>Clients range from modern JavaScript apps to legacy Java/COBOL integrations — lowest common denominator wins.</li></ul><strong>The discipline to make URI versioning work:</strong><ul><li>Never break backward compatibility within a version. Add fields (backward-compatible), never remove or rename.</li><li>Give consumers a deprecation window (typically 6-12 months) before decommissioning a version.</li><li>Publish a versioning policy: when will v1 sunset? Subscribe to deprecation notifications?</li><li>Version only when breaking changes are inevitable. Additive changes don't need a version bump.</li></ul><hr><span class="tradeoff">Senior framing:</span> "The version strategy matters less than the discipline around it. I've seen teams with beautiful content negotiation APIs that broke consumers monthly, and teams with ugly /v1/v2/v3 URLs that never broke anything for 5 years. The contract matters more than the mechanism."`},
+        {q: "Secrets management for a Kubernetes-hosted Spring Boot app — Vault vs K8s Secrets vs AWS Secrets Manager vs environment variables. What's your recommendation?", tag:"high", a:`<p>Secrets management is one of those topics where you can detect security maturity from the answer. "Put it in application.yml" is the wrong answer; the right answer is layered and depends on your operational context.</p><hr><h4>The threat model (what you're protecting against)</h4><ul><li>Secrets committed to git (most common breach vector)</li><li>Secrets visible in container env vars (exploitable via container escape, process listing)</li><li>Secrets in container images (Docker inspect reveals them)</li><li>Secrets in memory dumps</li><li>Stale secrets after rotation (developer's local copy, old pods)</li></ul><hr><h4>Option 1: Environment Variables (the baseline)</h4><pre><code># Kubernetes secret → env var
+env:
+  - name: DB_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: db-credentials
+        key: password</code></pre><strong>Problems:</strong><ul><li>Env vars visible to all processes in the container and in process listing.</li><li>Secrets stored in Kubernetes Secrets, which are base64-encoded (NOT encrypted) unless cluster has encryption at rest configured.</li><li>Rotation requires pod restart to pick up new env var.</li><li>No access control beyond Kubernetes RBAC on the Secret.</li></ul><strong>Acceptable for:</strong> dev/staging environments, non-sensitive configuration.<hr><h4>Option 2: Kubernetes Secrets + encryption at rest + volume mount</h4><pre><code># Better: mount as file, not env var
+volumeMounts:
+  - name: db-secret
+    mountPath: /etc/secrets
+    readOnly: true
+volumes:
+  - name: db-secret
+    secret:
+      secretName: db-credentials</code></pre><p>Spring Boot reads from <code>/etc/secrets/password</code>. Files are less visible than env vars.<br><strong>Also enable:</strong> etcd encryption at rest, Kubernetes Audit logging on Secret access, RBAC: only the service's ServiceAccount can read its Secret.<br><strong>Still a problem:</strong> no dynamic rotation without pod restart, no access audit trail out of the box, Kubernetes admin can still read any Secret.</p><hr><h4>Option 3: HashiCorp Vault (the gold standard for enterprise)</h4><pre><code># application.yml with Spring Cloud Vault:
+spring:
+  cloud:
+    vault:
+      authentication: KUBERNETES  # pod's ServiceAccount JWT as identity
+      kubernetes:
+        role: payment-service
+      kv:
+        enabled: true
+        default-context: payment-service</code></pre><strong>Vault provides:</strong><ul><li><strong>Dynamic secrets</strong>: Vault generates short-lived DB credentials on demand. The app gets a password that expires in 1h. No static long-lived passwords.</li><li><strong>Audit trail</strong>: every secret access logged with who, what, when.</li><li><strong>Fine-grained policies</strong>: payment-service can only read payment-service/* paths.</li><li><strong>Automatic rotation</strong>: Vault agent sidecar can refresh secrets into the filesystem without pod restart.</li><li><strong>Secret leasing</strong>: if a service is compromised, revoke all its leases immediately.</li></ul><strong>For SYNTAX enterprise clients:</strong> Vault is the recommendation for production sensitive secrets. Many already run it.<hr><h4>Option 4: Cloud-native secret stores</h4><ul><li><strong>AWS Secrets Manager</strong>: AWS-native, auto-rotation, KMS integration, fine-grained IAM policies. Use with <code>spring-cloud-aws-secrets-manager</code>.</li><li><strong>Azure Key Vault</strong>: Same concept on Azure. Use with <code>spring-cloud-azure-starter-keyvault-secrets</code>.</li><li><strong>GCP Secret Manager</strong>: GCP equivalent.</li></ul><strong>Use when:</strong> already committed to a single cloud provider and want to minimize operational overhead.<hr><h4>My recommendation</h4><ol><li>Never put secrets in code or Docker images.</li><li>Dev: encrypted .env files with git-crypt or SOPS, never committed plaintext.</li><li>Staging: K8s Secrets + encryption at rest, mounted as volumes.</li><li>Production: HashiCorp Vault (for multi-cloud/on-prem enterprise) or cloud-native secrets manager (for single-cloud). Dynamic secrets where possible.</li><li>Vault agent sidecar for auto-refresh without restart.</li></ol><hr><span class="tradeoff">Architect's framing:</span> "The biggest wins are preventing secrets from ever reaching git, and automatic rotation. Even if you start with K8s Secrets, the discipline of 'secrets are never in code' combined with encryption at rest is a massive improvement. Vault is the destination; get there incrementally."`}
+      ]
+    }
+  ]
 }
 ];
 
@@ -1330,8 +1610,9 @@ DATA.forEach((block, bi) => {
     sec.items.forEach((it, ii) => {
       const id = `b${bi}-s${si}-i${ii}`;
       totalItems++; blockItemCount++;
+      const aText = it.a.replace(/<[^>]+>/g,'').toLowerCase().replace(/"/g,'&quot;');
       itemsHtml += `
-        <div class="item" data-id="${id}" data-tag="${it.tag}" data-q="${it.q.replace(/"/g,'&quot;').toLowerCase()}">
+        <div class="item" data-id="${id}" data-tag="${it.tag}" data-q="${it.q.replace(/"/g,'&quot;').toLowerCase()}" data-a="${aText}">
           <div class="item-head">
             <div class="check" data-check="${id}"></div>
             <div class="item-q">${it.q}</div>
@@ -1410,15 +1691,33 @@ document.getElementById('searchInput').oninput = (e) => {
   applyFilters();
 };
 function applyFilters() {
+  let visible = 0;
   document.querySelectorAll('.item').forEach(item => {
     let show = true;
     if (activeFilter === 'crit' && item.dataset.tag !== 'crit') show = false;
     if (activeFilter === 'high' && item.dataset.tag !== 'high') show = false;
     if (activeFilter === 'med' && item.dataset.tag !== 'med') show = false;
     if (activeFilter === 'unchecked' && item.classList.contains('checked')) show = false;
-    if (activeSearch && !item.dataset.q.includes(activeSearch)) show = false;
+    if (activeSearch) {
+      const inQ = item.dataset.q.includes(activeSearch);
+      const inA = item.dataset.a && item.dataset.a.includes(activeSearch);
+      if (!inQ && !inA) show = false;
+    }
     item.classList.toggle('hidden', !show);
+    if (show) visible++;
   });
+  const countEl = document.getElementById('searchCount');
+  if (activeSearch) {
+    countEl.textContent = `${visible} result${visible !== 1 ? 's' : ''}`;
+    countEl.style.display = 'inline-block';
+    // Auto-expand blocks that have matching items
+    document.querySelectorAll('.block').forEach(block => {
+      const hasVisible = [...block.querySelectorAll('.item')].some(i => !i.classList.contains('hidden'));
+      if (hasVisible) block.classList.add('open'); else block.classList.remove('open');
+    });
+  } else {
+    countEl.style.display = 'none';
+  }
 }
 
 document.getElementById('btnExpandAll').onclick = () => {
@@ -1435,6 +1734,16 @@ document.getElementById('btnCollapseAll').onclick = () => {
     const t = i.querySelector('.show-ans'); if (t) t.textContent = 'notes';
   });
 };
+
+// TAB SWITCHING
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  };
+});
 
 // TIMER
 const TOTAL = 4 * 60 * 60; let remaining = TOTAL;
@@ -1469,6 +1778,339 @@ document.getElementById('btnReset').onclick = () => {
   running = false; clearInterval(interval); remaining = TOTAL; render();
 };
 render();
+
+// ============================================================
+// GLOSSARY / ΟΡΟΛΟΓΙΑ
+// ============================================================
+const GLOSSARY = [
+  {term:"Idempotency", cat:"Distributed Systems", def:"An operation that produces the same result regardless of how many times it is executed. Enables safe retries in distributed systems. A POST /payments with the same Idempotency-Key should never create two payments."},
+  {term:"Eventual Consistency", cat:"Distributed Systems", def:"A consistency model where replicas are not guaranteed to be identical at any instant, but will converge to the same state if no new updates are made. Acceptable for read replicas, caches, and search indexes. Not acceptable for financial balances."},
+  {term:"Strong Consistency", cat:"Distributed Systems", def:"Every read sees the most recent write. Requires coordination (consensus, distributed lock, or single primary). More expensive than eventual consistency but necessary for correctness in financial/booking systems."},
+  {term:"CAP Theorem", cat:"Distributed Systems", def:"In the presence of a network Partition, a distributed system must choose between Consistency (every read returns the latest write) and Availability (every node responds). Partition tolerance is not optional — networks fail. The real choice is C vs A under partition."},
+  {term:"PACELC", cat:"Distributed Systems", def:"Extension of CAP: if Partition → choose Availability or Consistency; Else → choose Latency or Consistency. Even without partitions, strong consistency costs latency (consensus rounds). Cassandra = PA/EL; Spanner = PC/EC."},
+  {term:"BASE", cat:"Distributed Systems", def:"Basically Available, Soft state, Eventually consistent. The opposite pole from ACID. Describes systems that trade strict consistency for availability and partition tolerance. Cassandra, DynamoDB in default mode."},
+  {term:"ACID", cat:"Data", def:"Atomicity (all-or-nothing), Consistency (invariants maintained), Isolation (concurrent transactions appear serial), Durability (committed data survives crashes). The guarantee set of traditional relational databases."},
+  {term:"Two-Phase Commit (2PC)", cat:"Distributed Systems", def:"Distributed protocol ensuring all-or-nothing across multiple nodes. Phase 1: coordinator asks all participants to prepare. Phase 2: if all agree, coordinator sends commit; else abort. Blocking if coordinator fails — avoided in modern microservices in favour of Sagas."},
+  {term:"Saga Pattern", cat:"Architecture Patterns", def:"A sequence of local transactions, each with a compensating transaction. Replaces 2PC for long-running business transactions across services. Two flavours: Orchestration (central coordinator) and Choreography (event-driven, decentralised). Compensation is not a rollback — it creates a new event that undoes a prior one."},
+  {term:"CQRS", cat:"Architecture Patterns", def:"Command Query Responsibility Segregation. Separate the write model (commands that change state) from the read model (queries optimised for specific views). Enables independent scaling, different storage per side, and projection-based read optimisation."},
+  {term:"Event Sourcing", cat:"Architecture Patterns", def:"Store state as an ordered log of events rather than current values. The current state is derived by replaying events. Provides full audit trail, temporal queries, and replay for debugging. Pairs well with CQRS. Adds operational complexity — not justified for every domain."},
+  {term:"Outbox Pattern", cat:"Architecture Patterns", def:"Reliably publish events alongside database writes. Within the same DB transaction, write both the business record and the event to an 'outbox' table. A separate process (Debezium CDC or polling) reads the outbox and publishes to Kafka. Prevents the dual-write problem: either both DB write and event happen, or neither does."},
+  {term:"Strangler Fig", cat:"Architecture Patterns", def:"Incremental legacy modernisation pattern. New functionality is built alongside the legacy system behind a facade (API gateway or proxy). Traffic is gradually rerouted to the new system, path by path, until the legacy is fully replaced. Contrast with big-bang rewrite, which almost always fails."},
+  {term:"Anti-Corruption Layer (ACL)", cat:"Architecture Patterns", def:"A translation layer that isolates your clean domain model from a legacy or external system's messy model. Prevents legacy concepts from leaking into your domain. Implemented as adapters, translators, and mappers at the integration boundary."},
+  {term:"Circuit Breaker", cat:"Resilience", def:"Resilience pattern that stops calls to a failing dependency after a threshold of failures. States: CLOSED (normal), OPEN (reject fast, no calls), HALF-OPEN (probe with one request). Allows recovery time. Implemented via Resilience4j in Spring Boot."},
+  {term:"Bulkhead", cat:"Resilience", def:"Isolate failures to contain blast radius. Named after ship compartments. Each downstream dependency or tenant gets its own thread pool or connection pool — one failing dependency cannot exhaust resources for all others."},
+  {term:"Retry with Backoff", cat:"Resilience", def:"Automatically retry transient failures with increasing delay between attempts. Use exponential backoff (2s, 4s, 8s...) with jitter (randomisation) to prevent thundering herds. Only retry idempotent operations. Set a max retry count."},
+  {term:"Bounded Context", cat:"Architecture Patterns", def:"DDD concept: a defined boundary within which a particular domain model applies and is internally consistent. Different bounded contexts may use the same word with different meanings (e.g. 'Order' in billing vs. shipping). Integration between contexts happens via ACL or published events."},
+  {term:"Domain-Driven Design (DDD)", cat:"Architecture Patterns", def:"An approach to software design centred on modelling a rich domain. Key concepts: ubiquitous language (common vocabulary between devs and domain experts), bounded contexts, aggregates (consistency boundaries), entities, value objects, domain events. Strategic DDD guides service decomposition."},
+  {term:"Change Data Capture (CDC)", cat:"Data", def:"Tracks changes in a database at the log level (e.g. PostgreSQL WAL, MySQL binlog, DB2 journal) and streams them as events to consumers. Debezium is the leading open-source CDC tool. Used for event-driven integration, cache invalidation, and search index synchronisation without polling."},
+  {term:"Blue-Green Deployment", cat:"DevOps", def:"Two identical production environments: Blue (live) and Green (new version). Deploy to Green, run smoke tests, switch traffic. Instant rollback: flip traffic back to Blue. Requires double the infrastructure. Best for stateless services."},
+  {term:"Canary Release", cat:"DevOps", def:"Gradually shift a small percentage of production traffic to the new version (e.g. 1% → 5% → 25% → 100%). Monitor error rates and latency at each step. Rollback if metrics degrade. Lower risk than blue-green but more complex to orchestrate (needs traffic splitting in gateway/service mesh)."},
+  {term:"SLO / SLI / SLA", cat:"DevOps", def:"SLI (Service Level Indicator): a metric measuring a reliability property (e.g. success rate). SLO (Service Level Objective): your internal target for that metric (e.g. 99.9% success). SLA (Service Level Agreement): external contract with penalties if missed. Error Budget = 100% - SLO."},
+  {term:"Observability", cat:"DevOps", def:"The ability to understand a system's internal state from its external outputs alone (without code changes). Built on three pillars: Metrics (aggregated numbers), Logs (event records), Traces (request flows across services). Enables debugging novel failure modes, not just known ones."},
+  {term:"OpenTelemetry (OTel)", cat:"DevOps", def:"Vendor-neutral, open standard for collecting metrics, logs, and traces. Provides APIs, SDKs, and a wire protocol (OTLP). Data can be exported to any backend (Jaeger, Prometheus, Datadog, Grafana). Eliminates observability vendor lock-in. Default choice for new instrumentations."},
+  {term:"Service Mesh", cat:"DevOps", def:"Infrastructure layer that handles service-to-service communication transparently via sidecar proxies (Envoy). Provides: mTLS (mutual TLS), retries, circuit breaking, traffic splitting, distributed tracing — without application code changes. Istio is the dominant implementation on Kubernetes."},
+  {term:"JWT (JSON Web Token)", cat:"Security", def:"A compact, signed token format (header.payload.signature). Carries claims (iss, sub, aud, exp, roles). Signed with asymmetric key (RS256/ES256 recommended) or symmetric HMAC (HS256). Always validate: signature, issuer, audience, expiry. Stateless — no server-side session store needed."},
+  {term:"OAuth2 / OIDC", cat:"Security", def:"OAuth2 is the authorisation framework (delegated access via tokens). OIDC (OpenID Connect) adds authentication on top of OAuth2 (ID token with user identity). Key flows: Authorization Code + PKCE (user-facing), Client Credentials (machine-to-machine). Implemented by Keycloak, Entra ID, Okta."},
+  {term:"BOLA / IDOR", cat:"Security", def:"Broken Object Level Authorization (OWASP API1). Accessing another user's resource by manipulating IDs — e.g. GET /orders/999 when you own order 998. Most common API vulnerability. Fix: always verify resource ownership server-side, never trust client-supplied IDs alone."},
+  {term:"MVCC", cat:"Data", def:"Multi-Version Concurrency Control. Writers create new row versions rather than overwriting in place; readers see the snapshot from when their transaction started. Readers don't block writers, writers don't block readers. Used by PostgreSQL, Oracle, MySQL InnoDB. Operational implication: dead tuples accumulate and must be vacuumed."},
+  {term:"Transactional Outbox", cat:"Architecture Patterns", def:"See Outbox Pattern. The 'transactional' qualifier emphasises that the outbox write happens within the same ACID transaction as the business write — guaranteeing the event is published if and only if the business write commits."},
+  {term:"Virtual Threads (Project Loom)", cat:"Distributed Systems", def:"JVM-managed lightweight threads (GA in Java 21). When a virtual thread blocks on I/O, the JVM unmounts it from its OS carrier thread, freeing the carrier to run other virtual threads. Enables millions of concurrent blocking threads with a small carrier pool. Simplifies code vs reactive; not a substitute for CPU parallelism."},
+  {term:"HikariCP", cat:"Data", def:"The default and fastest JDBC connection pool in Spring Boot. Key insight: optimal pool size is much smaller than developers assume — roughly 2× CPU cores for the database server. Too many connections cause contention. Monitor: hikaricp_connections_pending; if sustained > 0, you have pool exhaustion."},
+  {term:"Kafka Consumer Group", cat:"Data", def:"A set of consumers sharing a single logical subscription to a topic. Partitions are distributed among consumers in the group — each partition is consumed by exactly one consumer at a time. Scaling out = adding consumers to the group (up to the partition count). Rebalancing occurs when consumers join/leave."}
+];
+
+(function renderGlossary() {
+  const grid = document.getElementById('glossaryGrid');
+  const empty = document.getElementById('glossaryEmpty');
+  const countEl = document.getElementById('glossaryCount');
+
+  GLOSSARY.forEach((item, i) => {
+    const card = document.createElement('div');
+    card.className = 'term-card';
+    card.dataset.term = item.term.toLowerCase();
+    card.dataset.def = item.def.toLowerCase();
+    card.dataset.cat = item.cat;
+    card.innerHTML = `<div class="term-name">${item.term}</div><div class="term-def">${item.def}</div><span class="term-cat">${item.cat}</span>`;
+    grid.appendChild(card);
+  });
+
+  function filterGlossary() {
+    const search = document.getElementById('glossarySearch').value.toLowerCase().trim();
+    const cat = document.querySelector('.cat-filter.active')?.dataset.cat || 'all';
+    let visible = 0;
+    document.querySelectorAll('.term-card').forEach(card => {
+      const matchSearch = !search || card.dataset.term.includes(search) || card.dataset.def.includes(search);
+      const matchCat = cat === 'all' || card.dataset.cat === cat;
+      const show = matchSearch && matchCat;
+      card.classList.toggle('hidden', !show);
+      if (show) visible++;
+    });
+    countEl.textContent = `${visible} / ${GLOSSARY.length} terms`;
+    empty.style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  document.getElementById('glossarySearch').addEventListener('input', filterGlossary);
+  document.querySelectorAll('.cat-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.cat-filter').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterGlossary();
+    });
+  });
+
+  filterGlossary();
+})();
+
+// ============================================================
+// CHEAT SHEET
+// ============================================================
+(function renderCheatSheet() {
+  const el = document.getElementById('cheatsheetContent');
+  el.innerHTML = `
+<div class="cs-section">
+  <div class="cs-section-h">HTTP Status Codes — Architect's Reference</div>
+  <div class="cs-grid">
+    <div class="cs-card"><h4>2xx — Success</h4>
+      <table class="cs-table">
+        <tr><th>Code</th><th>Meaning &amp; When to use</th></tr>
+        <tr><td class="k">200 OK</td><td>General success; response body carries result</td></tr>
+        <tr><td class="k">201 Created</td><td>POST created a resource; include Location header</td></tr>
+        <tr><td class="k">202 Accepted</td><td>Async processing started; poll or webhook for result</td></tr>
+        <tr><td class="k">204 No Content</td><td>Success with no body (DELETE, some PUTs)</td></tr>
+        <tr><td class="k">206 Partial Content</td><td>Range request (streaming, resumable downloads)</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>4xx — Client Errors</h4>
+      <table class="cs-table">
+        <tr><th>Code</th><th>Meaning &amp; When to use</th></tr>
+        <tr><td class="k">400 Bad Request</td><td>Invalid syntax, failed validation</td></tr>
+        <tr><td class="k">401 Unauthorized</td><td>Not authenticated (missing/invalid token)</td></tr>
+        <tr><td class="k">403 Forbidden</td><td>Authenticated but not authorised for this resource</td></tr>
+        <tr><td class="k">404 Not Found</td><td>Resource doesn't exist (or hide existence for security)</td></tr>
+        <tr><td class="k">409 Conflict</td><td>State conflict (duplicate, concurrent update, idempotency key reuse)</td></tr>
+        <tr><td class="k">422 Unprocessable</td><td>Syntactically valid but semantically wrong (business rule failure)</td></tr>
+        <tr><td class="k">429 Too Many Requests</td><td>Rate limited; include Retry-After header</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>5xx — Server Errors</h4>
+      <table class="cs-table">
+        <tr><th>Code</th><th>Meaning &amp; When to use</th></tr>
+        <tr><td class="k">500 Internal Error</td><td>Unhandled exception; log and alert</td></tr>
+        <tr><td class="k">502 Bad Gateway</td><td>Upstream returned invalid response (proxy/gateway)</td></tr>
+        <tr><td class="k">503 Service Unavailable</td><td>Temporarily down; circuit open; return Retry-After</td></tr>
+        <tr><td class="k">504 Gateway Timeout</td><td>Upstream timed out</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="cs-section">
+  <div class="cs-section-h">SQL Isolation Levels vs Anomalies</div>
+  <div class="cs-grid">
+    <div class="cs-card" style="grid-column: 1 / -1;"><h4>Anomaly Prevention Matrix</h4>
+      <table class="cs-table">
+        <tr><th>Level</th><th>Dirty Read</th><th>Non-Repeatable</th><th>Phantom</th><th>Serial Anomaly</th><th>Typical Use</th></tr>
+        <tr><td class="k">READ UNCOMMITTED</td><td class="r">✗</td><td class="r">✗</td><td class="r">✗</td><td class="r">✗</td><td>Almost never — only dirty analytics where staleness is OK</td></tr>
+        <tr><td class="k">READ COMMITTED</td><td class="g">✓</td><td class="r">✗</td><td class="r">✗</td><td class="r">✗</td><td>Default for PG/Oracle/SQL Server — most OLTP</td></tr>
+        <tr><td class="k">REPEATABLE READ</td><td class="g">✓</td><td class="g">✓</td><td class="y">~</td><td class="r">✗</td><td>Default MySQL; PG snapshot prevents phantoms too</td></tr>
+        <tr><td class="k">SERIALIZABLE</td><td class="g">✓</td><td class="g">✓</td><td class="g">✓</td><td class="g">✓</td><td>Highest correctness; PG uses SSI (optimistic, aborts on conflict)</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>Practical Alternatives</h4>
+      <table class="cs-table">
+        <tr><th>Pattern</th><th>Solves</th></tr>
+        <tr><td class="k">@Version + OptimisticLocking</td><td>Lost updates on single entity</td></tr>
+        <tr><td class="k">SELECT FOR UPDATE</td><td>Pessimistic lock on specific rows</td></tr>
+        <tr><td class="k">SKIP LOCKED</td><td>Queue-style processing without blocking</td></tr>
+        <tr><td class="k">Application-level lock (Redis)</td><td>Cross-table / cross-service invariants</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="cs-section">
+  <div class="cs-section-h">Garbage Collector Quick Reference</div>
+  <div class="cs-grid">
+    <div class="cs-card" style="grid-column: 1 / -1;"><h4>GC Algorithm Comparison</h4>
+      <table class="cs-table">
+        <tr><th>Collector</th><th>Pause model</th><th>Throughput</th><th>Best for</th><th>Flag</th></tr>
+        <tr><td class="k">Serial</td><td>Full STW</td><td>Low</td><td>Single-core, &lt;100MB heap</td><td>-XX:+UseSerialGC</td></tr>
+        <tr><td class="k">Parallel</td><td>Full STW (multi-thread)</td><td>Highest</td><td>Batch / analytics — care about throughput not latency</td><td>-XX:+UseParallelGC</td></tr>
+        <tr><td class="k">G1</td><td>Bounded STW (target pause)</td><td>High</td><td>General purpose ≥4GB. The safe default (Java 9+)</td><td>-XX:+UseG1GC</td></tr>
+        <tr><td class="k">ZGC</td><td>&lt;1ms (concurrent)</td><td>Good</td><td>Latency-sensitive; large heaps (&gt;16GB)</td><td>-XX:+UseZGC</td></tr>
+        <tr><td class="k">Shenandoah</td><td>&lt;10ms (concurrent)</td><td>Good</td><td>Similar to ZGC; Red Hat OpenJDK</td><td>-XX:+UseShenandoahGC</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>Key JVM Flags (Spring Boot)</h4>
+      <table class="cs-table">
+        <tr><th>Flag</th><th>Purpose</th></tr>
+        <tr><td class="k">-XX:MaxRAMPercentage=75</td><td>Heap = 75% of container RAM</td></tr>
+        <tr><td class="k">-XX:MaxGCPauseMillis=200</td><td>G1 pause target</td></tr>
+        <tr><td class="k">-XX:+HeapDumpOnOutOfMemoryError</td><td>Dump on OOM for analysis</td></tr>
+        <tr><td class="k">-XX:+ExitOnOutOfMemoryError</td><td>Die cleanly → orchestrator restarts</td></tr>
+        <tr><td class="k">-XX:MaxMetaspaceSize=256m</td><td>Cap metaspace, catch classloader leaks</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="cs-section">
+  <div class="cs-section-h">Java Version Feature Timeline</div>
+  <div class="cs-grid">
+    <div class="cs-card" style="grid-column: 1 / -1;"><h4>Key Features by Version (LTS highlighted)</h4>
+      <table class="cs-table">
+        <tr><th>Version</th><th>Type</th><th>Key additions (architect-relevant)</th></tr>
+        <tr><td class="k">Java 8 (LTS)</td><td>LTS</td><td>Streams, Lambdas, Optional, CompletableFuture, java.time (Joda replacement), default interface methods, PermGen → Metaspace</td></tr>
+        <tr><td class="k">Java 11 (LTS)</td><td>LTS</td><td>HttpClient (standard, async), var in lambdas, String::isBlank/strip, LTS baseline for enterprise</td></tr>
+        <tr><td class="k">Java 17 (LTS)</td><td>LTS</td><td>Sealed classes, Records, Pattern matching instanceof, Text blocks, enhanced Switch. Strong encapsulation of JDK internals. Spring Boot 3+ requires Java 17.</td></tr>
+        <tr><td class="k">Java 21 (LTS)</td><td>LTS</td><td>Virtual threads GA (Project Loom), Structured Concurrency (preview), Record patterns, Sequenced Collections, Pattern matching switch GA</td></tr>
+        <tr><td class="k">Java 24</td><td>Non-LTS</td><td>Reduces virtual thread pinning on synchronized, ahead-of-time class loading, stream gatherers GA</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="cs-section">
+  <div class="cs-section-h">CAP / Databases Quick Reference</div>
+  <div class="cs-grid">
+    <div class="cs-card"><h4>CAP Classification</h4>
+      <table class="cs-table">
+        <tr><th>System</th><th>Partition</th><th>Normal (PACELC)</th></tr>
+        <tr><td class="k">PostgreSQL</td><td>CP</td><td>EC</td></tr>
+        <tr><td class="k">MySQL InnoDB</td><td>CP</td><td>EC</td></tr>
+        <tr><td class="k">Cassandra</td><td>AP</td><td>EL</td></tr>
+        <tr><td class="k">DynamoDB (default)</td><td>AP</td><td>EL</td></tr>
+        <tr><td class="k">MongoDB (default)</td><td>AP</td><td>EC</td></tr>
+        <tr><td class="k">Redis Cluster</td><td>AP</td><td>EL</td></tr>
+        <tr><td class="k">Zookeeper / etcd</td><td>CP</td><td>EC</td></tr>
+        <tr><td class="k">Spanner</td><td>CP</td><td>EC*</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>Pick the Right Store</h4>
+      <table class="cs-table">
+        <tr><th>Workload</th><th>Recommended</th></tr>
+        <tr><td class="k">ACID transactions</td><td>PostgreSQL / DB2 / Oracle</td></tr>
+        <tr><td class="k">Full-text search</td><td>Elasticsearch / OpenSearch</td></tr>
+        <tr><td class="k">Cache / session</td><td>Redis</td></tr>
+        <tr><td class="k">High-write time-series</td><td>InfluxDB / Prometheus</td></tr>
+        <tr><td class="k">Analytics / OLAP</td><td>ClickHouse / BigQuery / Redshift</td></tr>
+        <tr><td class="k">Event streaming</td><td>Apache Kafka</td></tr>
+        <tr><td class="k">Document store</td><td>MongoDB / Couchbase</td></tr>
+        <tr><td class="k">Graph</td><td>Neo4j / Amazon Neptune</td></tr>
+        <tr><td class="k">Wide-column (high write)</td><td>Cassandra / ScyllaDB</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="cs-section">
+  <div class="cs-section-h">Kafka — Key Concepts</div>
+  <div class="cs-grid">
+    <div class="cs-card"><h4>Core Concepts</h4>
+      <table class="cs-table">
+        <tr><th>Concept</th><th>What it means</th></tr>
+        <tr><td class="k">Topic</td><td>Named, ordered, durable log. Partitioned for scale.</td></tr>
+        <tr><td class="k">Partition</td><td>Unit of ordering and parallelism. One consumer per partition per group.</td></tr>
+        <tr><td class="k">Consumer Group</td><td>Set of consumers sharing a subscription. Each partition → exactly one consumer.</td></tr>
+        <tr><td class="k">Offset</td><td>Position of a message in a partition. Consumers commit offsets to track progress.</td></tr>
+        <tr><td class="k">Replication</td><td>Each partition has N replicas. Leader handles writes; followers replicate.</td></tr>
+        <tr><td class="k">ISR</td><td>In-Sync Replicas. Replicas caught up to leader. acks=all waits for ISR.</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>Delivery Guarantees</h4>
+      <table class="cs-table">
+        <tr><th>Setting</th><th>Guarantee</th><th>Trade-off</th></tr>
+        <tr><td class="k">acks=0</td><td>At-most-once</td><td>Fastest; may lose messages</td></tr>
+        <tr><td class="k">acks=1</td><td>At-most-once</td><td>Fast; leader crash = loss</td></tr>
+        <tr><td class="k">acks=all</td><td>At-least-once</td><td>Safe; retries may duplicate</td></tr>
+        <tr><td class="k">acks=all + idempotent producer</td><td>Exactly-once produce</td><td>Default since Kafka 3</td></tr>
+        <tr><td class="k">Transactional API</td><td>Exactly-once end-to-end</td><td>Higher latency; use for fintech</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="cs-section">
+  <div class="cs-section-h">Spring Boot Annotations — Quick Ref</div>
+  <div class="cs-grid">
+    <div class="cs-card"><h4>Core / Context</h4>
+      <table class="cs-table">
+        <tr><th>Annotation</th><th>Purpose</th></tr>
+        <tr><td class="k">@SpringBootApplication</td><td>@Configuration + @EnableAutoConfiguration + @ComponentScan</td></tr>
+        <tr><td class="k">@Component / @Service / @Repository</td><td>Bean declaration; @Repository adds exception translation</td></tr>
+        <tr><td class="k">@Configuration + @Bean</td><td>Java-based bean config; prefer over XML</td></tr>
+        <tr><td class="k">@Value / @ConfigurationProperties</td><td>Inject properties; @ConfigurationProperties for type-safe groups</td></tr>
+        <tr><td class="k">@Conditional*</td><td>Register bean only if condition met (profile, property, class present)</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>Web / Security</h4>
+      <table class="cs-table">
+        <tr><th>Annotation</th><th>Purpose</th></tr>
+        <tr><td class="k">@RestController</td><td>@Controller + @ResponseBody; JSON by default</td></tr>
+        <tr><td class="k">@GetMapping / @PostMapping</td><td>Route shortcuts; prefer over @RequestMapping(method=)</td></tr>
+        <tr><td class="k">@PreAuthorize</td><td>Method-level security with SpEL; needs @EnableMethodSecurity</td></tr>
+        <tr><td class="k">@Transactional</td><td>Demarcates a transaction; applies to public methods on managed beans</td></tr>
+        <tr><td class="k">@Async + @EnableAsync</td><td>Run method in thread pool; returns CompletableFuture</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="cs-section">
+  <div class="cs-section-h">Kubernetes — Architect's Cheat Sheet</div>
+  <div class="cs-grid">
+    <div class="cs-card"><h4>Workload Objects</h4>
+      <table class="cs-table">
+        <tr><th>Object</th><th>Use when</th></tr>
+        <tr><td class="k">Deployment</td><td>Stateless services. Rolling updates, replica scaling.</td></tr>
+        <tr><td class="k">StatefulSet</td><td>Stateful apps needing stable network IDs + persistent storage (Kafka, Cassandra)</td></tr>
+        <tr><td class="k">DaemonSet</td><td>Run one pod per node (log collector, monitoring agent)</td></tr>
+        <tr><td class="k">CronJob</td><td>Scheduled batch jobs</td></tr>
+        <tr><td class="k">Job</td><td>One-off batch task; retries on failure</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>Probe Types</h4>
+      <table class="cs-table">
+        <tr><th>Probe</th><th>Triggers</th><th>Failure action</th></tr>
+        <tr><td class="k">livenessProbe</td><td>Continuously</td><td>Restart container</td></tr>
+        <tr><td class="k">readinessProbe</td><td>Continuously</td><td>Remove from Service (no restart)</td></tr>
+        <tr><td class="k">startupProbe</td><td>Once at startup</td><td>Kill and restart if too slow</td></tr>
+      </table>
+      <p style="font-size:11px;color:var(--text-muted);margin-top:8px">Rule: liveness should be LESS aggressive than readiness. Never use a slow dependency check in liveness — it will kill healthy pods.</p>
+    </div>
+    <div class="cs-card"><h4>Resource Management</h4>
+      <table class="cs-table">
+        <tr><th>Field</th><th>Meaning</th></tr>
+        <tr><td class="k">requests.cpu</td><td>Guaranteed CPU (used for scheduling)</td></tr>
+        <tr><td class="k">limits.cpu</td><td>Max CPU (throttled if exceeded)</td></tr>
+        <tr><td class="k">requests.memory</td><td>Guaranteed RAM (used for scheduling)</td></tr>
+        <tr><td class="k">limits.memory</td><td>Max RAM; OOM-killed if exceeded</td></tr>
+      </table>
+      <p style="font-size:11px;color:var(--text-muted);margin-top:8px">Best practice: set requests = limits for memory (predictable). Set CPU requests &lt; limits (allow bursting).</p>
+    </div>
+  </div>
+</div>
+
+<div class="cs-section">
+  <div class="cs-section-h">Architecture Patterns — One-Line Decisions</div>
+  <div class="cs-grid">
+    <div class="cs-card" style="grid-column: 1 / -1;"><h4>Pattern Decision Matrix</h4>
+      <table class="cs-table">
+        <tr><th>Problem</th><th>Pattern</th><th>When NOT to use it</th></tr>
+        <tr><td class="k">Cross-service transaction</td><td>Saga (Orchestration for auditability, Choreography for independence)</td><td>If you can share a DB — just use a local transaction</td></tr>
+        <tr><td class="k">Reliable event publishing</td><td>Transactional Outbox + CDC</td><td>If at-least-once is fine and consumer is idempotent</td></tr>
+        <tr><td class="k">Read scalability + audit trail</td><td>CQRS + Event Sourcing</td><td>Simple CRUD with no complex query patterns</td></tr>
+        <tr><td class="k">Legacy modernisation</td><td>Strangler Fig</td><td>When the legacy is so broken it actively harms new work</td></tr>
+        <tr><td class="k">Legacy integration</td><td>Anti-Corruption Layer</td><td>When you control both sides — rethink the domain instead</td></tr>
+        <tr><td class="k">Dependency failure isolation</td><td>Circuit Breaker + Bulkhead + Timeout</td><td>If the dependency is synchronously required for correctness</td></tr>
+        <tr><td class="k">Microservices decomposition</td><td>Domain-Driven Design bounded contexts</td><td>Team &lt;15 engineers or domain still being discovered</td></tr>
+        <tr><td class="k">Zero-downtime deploy</td><td>Blue-Green (simple) or Canary (safe)</td><td>When you have DB migrations incompatible with running old code</td></tr>
+      </table>
+    </div>
+  </div>
+</div>`;
+})();
+
 </script>
 </body>
 </html>
