@@ -340,6 +340,61 @@
     background: var(--bg-card); border: 1px solid var(--border);
     white-space: nowrap;
   }
+
+  /* === Diagrams / Σχήματα === */
+  .diag-section { margin-bottom: 32px; }
+  .diag-section-h {
+    font-family: 'Fraunces', serif; font-size: 17px; font-weight: 600;
+    color: var(--accent); margin-bottom: 12px;
+    padding-bottom: 6px; border-bottom: 1px solid var(--border);
+  }
+  .diag-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(370px, 1fr));
+    gap: 14px;
+  }
+  .diag-card {
+    border: 1px solid var(--border); background: var(--bg-card);
+    border-radius: 10px; padding: 14px 16px;
+  }
+  .diag-card h4 {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted);
+    margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px dashed var(--border);
+  }
+  .key-insight {
+    font-size: 11px; color: var(--accent); margin-top: 10px;
+    padding: 5px 8px; background: var(--accent-soft); border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace; line-height: 1.5;
+  }
+  /* colored pre diagrams */
+  .dg {
+    font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
+    color: var(--text); background: var(--code-bg);
+    padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border);
+    overflow-x: auto; white-space: pre; line-height: 1.55; margin: 0;
+  }
+  .dg .a { color: var(--accent); }
+  .dg .g { color: var(--done); }
+  .dg .b { color: var(--info); }
+  .dg .y { color: var(--warn); }
+  .dg .r { color: var(--crit); }
+  .dg .d { color: var(--text-dim); }
+  /* flow diagram primitives */
+  .flow { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin: 4px 0; }
+  .flow-v { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bx {
+    border: 1px solid; border-radius: 6px; padding: 5px 9px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    text-align: center; white-space: nowrap; min-width: 64px; line-height: 1.35;
+  }
+  .bx.a { background: #ff6b3520; color: var(--accent); border-color: #ff6b3555; }
+  .bx.g { background: #4ade8020; color: var(--done);   border-color: #4ade8055; }
+  .bx.b { background: #60a5fa20; color: var(--info);   border-color: #60a5fa55; }
+  .bx.y { background: #fbbf2420; color: var(--warn);   border-color: #fbbf2455; }
+  .bx.r { background: #f8717120; color: var(--crit);   border-color: #f8717155; }
+  .bx.d { background: var(--bg-elev); color: var(--text-dim); border-color: var(--border); }
+  .ar  { color: var(--text-muted); font-size: 13px; padding: 0 2px; flex-shrink: 0; }
+  .lbl { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); }
 </style>
 </head>
 <body>
@@ -370,6 +425,7 @@
     <button class="tab-btn active" data-tab="questions">Questions</button>
     <button class="tab-btn" data-tab="glossary">Ορολογία</button>
     <button class="tab-btn" data-tab="cheatsheet">Cheat Sheet</button>
+    <button class="tab-btn" data-tab="diagrams">Σχήματα</button>
   </div>
 
   <div class="tab-pane active" id="tab-questions">
@@ -424,6 +480,10 @@
   <div class="tab-pane" id="tab-cheatsheet">
     <div id="cheatsheetContent"></div>
   </div><!-- /tab-pane#cheatsheet -->
+
+  <div class="tab-pane" id="tab-diagrams">
+    <div id="diagramsContent"></div>
+  </div><!-- /tab-pane#diagrams -->
 
 </div>
 
@@ -1780,6 +1840,815 @@ document.getElementById('btnReset').onclick = () => {
   running = false; clearInterval(interval); remaining = TOTAL; render();
 };
 render();
+
+// ============================================================
+// DIAGRAMS / ΣΧΗΜΑΤΑ
+// ============================================================
+(function renderDiagrams(){
+const el=document.getElementById('diagramsContent');
+el.innerHTML=`
+
+<div class="diag-section">
+  <div class="diag-section-h">JVM — Memory Architecture &amp; GC</div>
+  <div class="diag-grid">
+
+    <div class="diag-card" style="grid-column:1/-1">
+      <h4>JVM Memory Regions</h4>
+      <pre class="dg"><span class="d">┌──────────────────────────────────────────────────────────────────────────────┐
+│                           H E A P   (-Xmx)                                  │
+│  ┌──────────────────────────────────────────────┐  ┌───────────────────────┐ │
+│  │            YOUNG GENERATION                  │  │    OLD GENERATION     │ │
+│  │  ┌──────────────────┐  ┌────────┐  ┌──────┐ │  │    (Tenured)          │ │</span>
+<span class="a">│  │  │       EDEN       │  │  S0    │  │  S1  │ │  │                       │ │</span>
+<span class="b">│  │  │  new Obj() TLAB  │  │ age 1+ │  │ age+ │ │  │  long-lived objects   │ │</span>
+<span class="d">│  │  │  cheap bump-ptr  │  │        │  │      │ │  │  promoted after N GCs │ │
+│  │  └──────────────────┘  └────────┘  └──────┘ │  └───────────────────────┘ │
+│  └──────────────────────────────────────────────┘                           │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  METASPACE (native, ≠ heap)          │  THREAD STACKS    │  CODE CACHE      │</span>
+<span class="y">│  Class metadata · bytecode · JIT     │  per-thread LIFO  │  JIT output      │</span>
+<span class="d">│  -XX:MaxMetaspaceSize=256m           │  frames · locals  │  ~240MB default  │
+└──────────────────────────────────────────────────────────────────────────────┘</span></pre>
+      <div class="key-insight">⚡ Eden fills → Minor GC (ms). Old Gen fills → Full GC (hundreds of ms). Metaspace leak = classloader leak (CGLib, Hibernate, JAXB).</div>
+    </div>
+
+    <div class="diag-card">
+      <h4>GC — Object Lifetime Flow</h4>
+      <div class="flow-v" style="align-items:flex-start;gap:6px">
+        <div class="flow">
+          <div class="bx a">new Obj()</div><div class="ar">→</div>
+          <div class="bx a">Eden TLAB<br><span style="font-size:10px">bump-pointer</span></div><div class="ar">→</div>
+          <div class="bx b">Eden full<br><span style="font-size:10px">Minor GC (STW)</span></div>
+        </div>
+        <div style="padding-left:8px;color:var(--text-muted);font-size:12px">↓ survivors copied</div>
+        <div class="flow">
+          <div class="bx y">Survivor S0/S1<br><span style="font-size:10px">age increments</span></div><div class="ar">→ age≥15 →</div>
+          <div class="bx r">Old Gen<br><span style="font-size:10px">Major/Full GC</span></div>
+        </div>
+        <div style="padding-left:8px;color:var(--text-muted);font-size:12px">↓ unreachable at any stage</div>
+        <div class="flow"><div class="bx g">reclaimed ✓</div></div>
+        <div style="margin-top:4px;padding:6px 8px;background:var(--bg-elev);border-radius:4px;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-dim)">
+          Weak generational hypothesis:<br>most objects die young → Minor GC is cheap
+        </div>
+      </div>
+      <div class="key-insight">⚡ Survivors that keep growing = memory leak. Use JFR + MAT to find retention paths.</div>
+    </div>
+
+    <div class="diag-card">
+      <h4>GC Algorithm Decision</h4>
+      <div class="flow-v" style="align-items:flex-start;gap:6px">
+        <div class="flow"><div class="bx d" style="min-width:130px">Heap &lt; 2 GB?</div><div class="ar">YES →</div><div class="bx g">G1 (default)</div></div>
+        <div style="padding-left:6px;color:var(--text-muted);font-size:11px">NO ↓</div>
+        <div class="flow"><div class="bx d" style="min-width:130px">p99 latency &lt;5ms?</div><div class="ar">NO →</div><div class="bx g">G1 still fine</div></div>
+        <div style="padding-left:6px;color:var(--text-muted);font-size:11px">YES ↓</div>
+        <div class="flow"><div class="bx y">ZGC (&lt;1ms)</div><div class="ar">or</div><div class="bx y">Shenandoah</div></div>
+        <div style="margin-top:6px;padding:6px 8px;background:var(--bg-elev);border-radius:4px;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-dim)">
+          Batch/analytics only → <span style="color:var(--info)">Parallel GC</span> (max throughput)<br>
+          Single-core tiny heap → <span style="color:var(--info)">Serial GC</span>
+        </div>
+      </div>
+      <div class="key-insight">⚡ Profile first (-XX:+UseG1GC is default since Java 9). Switch only when GC metrics show a real problem.</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="diag-section">
+  <div class="diag-section-h">Distributed Systems — Consistency &amp; State</div>
+  <div class="diag-grid">
+
+    <div class="diag-card">
+      <h4>CAP — Where Real Databases Land</h4>
+      <pre class="dg"><span class="d">              CONSISTENCY (C)
+                    ▲</span>
+<span class="b">         ZK · etcd · Spanner</span>
+<span class="a">         PostgreSQL · DB2 · Oracle  ← CP</span>
+<span class="d">         (strong consistency, may reject on partition)
+                    │
+        ────────────┼────────────</span>
+<span class="y">  MongoDB  ─────────┤  ← AP/EC</span>
+<span class="r">  Cassandra ────────┤  ← AP/EL</span>
+<span class="r">  DynamoDB  ────────┤  ← AP/EL</span>
+<span class="d">  (serve stale data on partition)
+                    │
+  AVAILABILITY (A) ─┴─ PARTITION (P)
+
+</span><span class="g">  P is non-negotiable</span><span class="d"> — real networks partition.
+  True choice: C vs A </span><span class="a">when partition occurs</span><span class="d">.
+  PACELC adds: even without partition,
+  strong C costs </span><span class="y">latency</span><span class="d"> (consensus rounds).</span></pre>
+      <div class="key-insight">⚡ Different operations need different consistency. Order balance → CP. Product catalog read → AP is fine.</div>
+    </div>
+
+    <div class="diag-card">
+      <h4>Consistency Spectrum</h4>
+      <div class="flow-v" style="gap:3px">
+        <div class="flow"><div class="bx r" style="min-width:170px">Linearisability</div><div class="lbl" style="margin-left:4px">strongest · slowest · etcd/ZK</div></div>
+        <div class="flow"><div class="bx r" style="min-width:170px">Strict Serializability</div><div class="lbl" style="margin-left:4px">global tx order</div></div>
+        <div class="flow"><div class="bx y" style="min-width:170px">SERIALIZABLE (SQL)</div><div class="lbl" style="margin-left:4px">SSI in Postgres</div></div>
+        <div class="flow"><div class="bx y" style="min-width:170px">REPEATABLE READ</div><div class="lbl" style="margin-left:4px">MySQL default</div></div>
+        <div class="flow"><div class="bx b" style="min-width:170px">READ COMMITTED</div><div class="lbl" style="margin-left:4px">PG/Oracle default ← use this</div></div>
+        <div class="flow"><div class="bx g" style="min-width:170px">Read-Your-Writes</div><div class="lbl" style="margin-left:4px">session guarantee</div></div>
+        <div class="flow"><div class="bx g" style="min-width:170px">Eventual Consistency</div><div class="lbl" style="margin-left:4px">weakest · fastest · Cassandra</div></div>
+        <div style="margin-top:6px;font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text-muted)">
+          ↑ more correct → ↑ more coordination cost
+        </div>
+      </div>
+      <div class="key-insight">⚡ Match consistency PER OPERATION to business need. Not per-database. Use optimistic locking for single-entity conflicts.</div>
+    </div>
+
+    <div class="diag-card">
+      <h4>Circuit Breaker — State Machine</h4>
+      <pre class="dg"><span class="d">   requests flow normally</span>
+<span class="g">  ┌─────────────────────┐
+  │       CLOSED        │  ← healthy
+  └──────────┬──────────┘</span>
+             │
+<span class="r">  failure rate &gt; threshold</span>
+  <span class="d">(e.g. 50% over last 100 calls)</span>
+             │
+             ▼
+<span class="r">  ┌─────────────────────┐
+  │        OPEN         │  ← fast-fail, no calls
+  └──────────┬──────────┘    return fallback</span>
+             │
+<span class="y">  waitDuration expires (e.g. 60s)</span>
+             │
+             ▼
+<span class="y">  ┌─────────────────────┐
+  │     HALF-OPEN       │  ← send N probe calls
+  └──┬──────────────┬───┘</span>
+     │              │
+<span class="g">   success       </span><span class="r">failure</span>
+     │              │
+     ▼              ▼
+<span class="g">   CLOSED         OPEN</span>
+<span class="d">   (recover)      (back-off)</span></pre>
+      <div class="key-insight">⚡ Resilience4j: @CircuitBreaker(name="payment", fallbackMethod="payFallback"). Bind metrics to Prometheus.</div>
+    </div>
+
+    <div class="diag-card">
+      <h4>Resilience Pattern Stack</h4>
+      <pre class="dg"><span class="d">  Incoming call
+       ↓</span>
+<span class="a">  ┌─ @RateLimiter ─────────────────────┐</span>
+<span class="d">  │  Reject if over quota              │</span>
+<span class="b">  │  ┌─ @CircuitBreaker ─────────────┐ │</span>
+<span class="d">  │  │  Fast-fail if CB open         │ │</span>
+<span class="y">  │  │  ┌─ @Bulkhead ─────────────┐  │ │</span>
+<span class="d">  │  │  │  Cap concurrency        │  │ │</span>
+<span class="r">  │  │  │  ┌─ @Retry ───────────┐ │  │ │</span>
+<span class="d">  │  │  │  │  Retry transients  │ │  │ │</span>
+<span class="g">  │  │  │  │  ┌─ @TimeLimiter ┐ │ │  │ │</span>
+<span class="d">  │  │  │  │  │  Bound time   │ │ │  │ │</span>
+<span class="d">  │  │  │  │  │  ACTUAL CALL  │ │ │  │ │</span>
+<span class="g">  │  │  │  │  └───────────────┘ │ │  │ │</span>
+<span class="r">  │  │  │  └────────────────────┘ │  │ │</span>
+<span class="y">  │  │  └──────────────────────────┘  │ │</span>
+<span class="b">  │  └────────────────────────────────┘ │</span>
+<span class="a">  └────────────────────────────────────┘</span>
+<span class="d">       ↓ any layer triggers</span>
+<span class="g">  fallback(degraded response / cached data)</span></pre>
+      <div class="key-insight">⚡ Timeout MUST exist on every external call — default RestTemplate has NO timeout. Missing timeout = thread leak under load.</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="diag-section">
+  <div class="diag-section-h">Architecture Patterns — Visual Flows</div>
+  <div class="diag-grid">
+
+    <div class="diag-card" style="grid-column:1/-1">
+      <h4>Saga — Orchestration vs Choreography (flight booking)</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div>
+          <div style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:11px;margin-bottom:8px">▶ ORCHESTRATION — central coordinator</div>
+          <div class="flow-v" style="align-items:center;gap:3px">
+            <div class="bx b">Client</div><div class="ar">↓</div>
+            <div class="bx a" style="min-width:150px">Orchestrator / Saga</div>
+            <div style="display:flex;gap:6px;margin:2px 0">
+              <div class="flow-v" style="align-items:center;gap:2px">
+                <div class="ar" style="font-size:10px">↓ 1</div>
+                <div class="bx b" style="font-size:10px;min-width:70px">FlightSvc<br>ReserveSeat</div>
+                <div class="bx g" style="font-size:10px;padding:2px 6px">OK</div>
+              </div>
+              <div class="flow-v" style="align-items:center;gap:2px">
+                <div class="ar" style="font-size:10px">↓ 2</div>
+                <div class="bx b" style="font-size:10px;min-width:70px">PaymentSvc<br>ChargeCard</div>
+                <div class="bx g" style="font-size:10px;padding:2px 6px">OK</div>
+              </div>
+              <div class="flow-v" style="align-items:center;gap:2px">
+                <div class="ar" style="font-size:10px">↓ 3</div>
+                <div class="bx b" style="font-size:10px;min-width:70px">TicketSvc<br>IssueTicket</div>
+                <div class="bx r" style="font-size:10px;padding:2px 6px">FAIL</div>
+              </div>
+            </div>
+            <div style="font-size:10px;color:var(--crit);font-family:'JetBrains Mono',monospace">↓ compensate in reverse</div>
+            <div style="display:flex;gap:6px">
+              <div class="bx r" style="font-size:10px">RefundCard</div>
+              <div class="bx r" style="font-size:10px">ReleaseSeat</div>
+            </div>
+          </div>
+          <div style="margin-top:8px;font-size:10px;font-family:'JetBrains Mono',monospace">
+            <div style="color:var(--done)">+ Visible flow · Auditable · Easy to monitor</div>
+            <div style="color:var(--crit)">- Orchestrator = coupling point</div>
+          </div>
+        </div>
+        <div>
+          <div style="color:var(--info);font-family:'JetBrains Mono',monospace;font-size:11px;margin-bottom:8px">▶ CHOREOGRAPHY — event-driven</div>
+          <div class="flow-v" style="gap:3px">
+            <div class="flow"><div class="bx b" style="min-width:80px">FlightSvc</div><div class="ar">→</div><div class="bx d" style="font-size:10px">SeatReserved</div></div>
+            <div style="padding-left:20px;color:var(--text-muted);font-size:11px">↓ listens on Kafka</div>
+            <div class="flow"><div class="bx b" style="min-width:80px">PaymentSvc</div><div class="ar">→</div><div class="bx d" style="font-size:10px">CardCharged</div></div>
+            <div style="padding-left:20px;color:var(--text-muted);font-size:11px">↓ listens on Kafka</div>
+            <div class="flow"><div class="bx b" style="min-width:80px">TicketSvc</div><div class="ar">→</div><div class="bx r" style="font-size:10px">TicketFailed</div></div>
+            <div style="padding-left:20px;color:var(--text-muted);font-size:11px">↓ listens</div>
+            <div class="flow"><div class="bx b" style="min-width:80px">PaymentSvc</div><div class="ar">→</div><div class="bx r" style="font-size:10px">CardRefunded</div></div>
+            <div style="padding-left:20px;color:var(--text-muted);font-size:11px">↓ listens</div>
+            <div class="flow"><div class="bx b" style="min-width:80px">FlightSvc</div><div class="ar">→</div><div class="bx r" style="font-size:10px">SeatReleased</div></div>
+          </div>
+          <div style="margin-top:8px;font-size:10px;font-family:'JetBrains Mono',monospace">
+            <div style="color:var(--done)">+ Decoupled · No SPOF</div>
+            <div style="color:var(--crit)">- Implicit flow · Hard to trace · Cycle risk</div>
+          </div>
+        </div>
+      </div>
+      <div class="key-insight">⚡ Use Orchestration for auditable business workflows (finance, insurance). Choreography for independent fan-out events (user signed-up → N reactions). Compensation ≠ rollback — it creates a new forward compensating event in the audit log.</div>
+    </div>
+
+    <div class="diag-card">
+      <h4>Outbox Pattern — Reliable Event Publishing</h4>
+      <pre class="dg"><span class="r">PROBLEM — dual write race condition:</span>
+<span class="d">  DB write ─→ success
+  Kafka publish ─→ </span><span class="r">CRASH</span><span class="d"> ← event permanently lost!
+
+</span><span class="g">SOLUTION — single atomic transaction:</span>
+<span class="d">  ┌────── TRANSACTION ─────────────────────┐</span>
+<span class="a">  │  INSERT orders(id,status,…)            │</span>
+<span class="a">  │  INSERT outbox_events(id,type,payload) │</span>
+<span class="d">  │  COMMIT ← both or neither              │
+  └────────────────────────────────────────┘
+             │
+             ▼</span>
+<span class="b">  Debezium reads PostgreSQL WAL</span>
+<span class="d">  (or polling publisher job)
+             │
+             ▼</span>
+<span class="y">  Kafka topic: domain.orders</span>
+<span class="d">       ↙       ↓       ↘</span>
+<span class="b">  Billing   Notif   Analytics</span>
+<span class="d">
+  Compensation record also via outbox → auditble</span></pre>
+      <div class="key-insight">⚡ Outbox + at-least-once + idempotent consumer ≈ exactly-once. Zero message loss AND no distributed transactions.</div>
+    </div>
+
+    <div class="diag-card">
+      <h4>Hexagonal Architecture (Ports &amp; Adapters)</h4>
+      <pre class="dg"><span class="b"> ─── DRIVING ADAPTERS (inbound) ───────────</span>
+<span class="d"> REST Controller  gRPC Handler  Test / CLI
+        ↓               ↓           ↓</span>
+<span class="b"> ─── PRIMARY PORT (interface) ─────────────</span>
+<span class="d">        ↓  OrderService.createOrder(cmd)
+  ┌─────────────────────────────────────┐</span>
+<span class="a">  │         APPLICATION CORE            │</span>
+<span class="d">  │   Domain Model (Order, Payment…)    │</span>
+<span class="a">  │   Use Cases / Application Services  │</span>
+<span class="d">  │   No framework deps. Pure Java.     │
+  └─────────────────────────────────────┘
+        ↓  OrderRepository.save(order)</span>
+<span class="y"> ─── SECONDARY PORT (interface) ───────────</span>
+<span class="d">        ↓               ↓           ↓</span>
+<span class="y"> JPA Adapter    Kafka Adapter   HTTP Adapter</span>
+<span class="d"> (JpaOrderRepo) (KafkaPublisher)(StripeClient)</span>
+<span class="y"> ─── DRIVEN ADAPTERS (outbound) ───────────</span>
+
+<span class="g"> For tests: inject InMemoryOrderRepository</span></pre>
+      <div class="key-insight">⚡ The domain never imports Spring, JPA, or Kafka. Invert the dependency: adapters implement the port interfaces defined in the domain layer.</div>
+    </div>
+
+    <div class="diag-card">
+      <h4>Strangler Fig — Migration Phases</h4>
+      <pre class="dg"><span class="d">PHASE 1 — COEXIST</span>
+<span class="d">  Client</span>
+<span class="d">    ↓</span>
+<span class="a">  Facade / API Gateway / Proxy</span>
+<span class="d">    ↙         ↘</span>
+<span class="r">  Legacy         </span><span class="g">New Service</span>
+<span class="r">  (most paths)   </span><span class="g">(new paths)</span>
+
+<span class="d">PHASE 2 — MIGRATE</span>
+<span class="d">  Move paths one by one from Legacy → New
+  Run both in parallel; validate parity</span>
+<span class="d">    ↙         ↘</span>
+<span class="r">  Legacy         </span><span class="g">New Service</span>
+<span class="r">  (few paths)    </span><span class="g">(most paths)</span>
+
+<span class="d">PHASE 3 — DECOMMISSION</span>
+<span class="d">  Client</span>
+<span class="d">    ↓</span>
+<span class="g">  New Service (all traffic)</span>
+<span class="r">  Legacy retired ← the actual goal</span>
+
+<span class="y">  Anti-Corruption Layer at every integration point</span></pre>
+      <div class="key-insight">⚡ The facade is temporary scaffolding. Without Phase 3 (decommission), you end up maintaining two systems forever.</div>
+    </div>
+
+    <div class="diag-card">
+      <h4>CQRS + Event Sourcing</h4>
+      <pre class="dg"><span class="d">       COMMAND (write) side</span>
+<span class="a">  Command</span><span class="d"> → </span><span class="a">Handler</span><span class="d"> → </span><span class="a">Domain Logic</span>
+<span class="d">                              ↓</span>
+<span class="a">                   Append Event to Store</span>
+<span class="d">                   (immutable, append-only)
+                              ↓</span>
+<span class="y">                   Publish to Kafka</span>
+<span class="d">                    ↙            ↘</span>
+<span class="b">             Projector A      Projector B</span>
+<span class="d">             (ReadModel A)    (ReadModel B)
+             Postgres table   Elasticsearch
+
+       QUERY (read) side</span>
+<span class="b">  Query</span><span class="d"> → </span><span class="b">Handler</span><span class="d"> → Read Model (optimised view) → Response</span>
+
+<span class="d">  State = </span><span class="g">REPLAY events from beginning</span>
+<span class="d">  "What did the order look like at 14:35 yesterday?"</span>
+<span class="g">  → replay up to that timestamp. Full temporal queries.</span></pre>
+      <div class="key-insight">⚡ Event Store = source of truth. Read models = disposable projections (can be rebuilt). Use CQRS without Event Sourcing if you just need read optimisation.</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="diag-section">
+  <div class="diag-section-h">Kafka — Topic, Partitions, Consumer Groups</div>
+  <div class="diag-grid">
+
+    <div class="diag-card" style="grid-column:1/-1">
+      <h4>Kafka Architecture — Full Picture</h4>
+      <pre class="dg"><span class="d">  PRODUCERS
+</span><span class="a">  Producer A (key=userA)</span><span class="d"> ─────────────────────────────────────────────────┐
+</span><span class="a">  Producer B (key=userB)</span><span class="d"> ─────────────────────────┐                        │
+</span><span class="a">  Producer C (key=userC)</span><span class="d"> ─────────┐                │                        │
+                                    ↓                ↓                        ↓</span>
+<span class="b">  Topic: orders  (partitions=3, replication-factor=3)</span>
+<span class="d">  ┌── Partition 0 ──────────────────────────────────────┐  ← </span><span class="a">Leader: Broker 1</span>
+<span class="d">  │ [0:msgA1] [1:msgA2] [2:msgA4] [3:msgA7]  offset→   │    Followers: 2,3</span>
+<span class="d">  └─────────────────────────────────────────────────────┘
+  ┌── Partition 1 ──────────────────────────────────────┐  ← </span><span class="a">Leader: Broker 2</span>
+<span class="d">  │ [0:msgB1] [1:msgB3] [2:msgB5]            offset→   │
+  └─────────────────────────────────────────────────────┘
+  ┌── Partition 2 ──────────────────────────────────────┐  ← </span><span class="a">Leader: Broker 3</span>
+<span class="d">  │ [0:msgC2] [1:msgC6] [2:msgC8]            offset→   │
+  └─────────────────────────────────────────────────────┘
+        │               │               │</span>
+<span class="b">  ── Consumer Group: billing-service ─────────────────</span>
+<span class="g">  Consumer 1      Consumer 2      Consumer 3</span>
+<span class="d">  (owns P0)       (owns P1)       (owns P2)
+  commit offset   commit offset   commit offset
+
+</span><span class="y">  ── Consumer Group: analytics-service ───────────────</span>
+<span class="y">  Consumer X  (reads ALL 3 partitions independently)</span>
+
+<span class="d">  Key rules:
+</span><span class="g">  ✓ same key → same partition → messages ordered within partition
+  ✓ multiple groups = each gets full copy of data
+  ✓ scale: add consumers up to partition count</span>
+<span class="r">  ✗ consumers &gt; partitions = idle consumers (no work to do)</span></pre>
+      <div class="key-insight">⚡ Partitions = unit of parallelism AND ordering. Set partition count at topic creation — increasing later requires consumer rebalance and loses key-ordering guarantees.</div>
+    </div>
+
+    <div class="diag-card">
+      <h4>Kafka Delivery Guarantees</h4>
+      <pre class="dg"><span class="d">PRODUCER SIDE:</span>
+<span class="r">  acks=0       </span><span class="d">fire &amp; forget         </span><span class="r">may lose</span>
+<span class="y">  acks=1       </span><span class="d">leader ack            </span><span class="y">leader crash = loss</span>
+<span class="g">  acks=all     </span><span class="d">all ISR ack           </span><span class="g">safe, ~2× latency</span>
+<span class="a">  acks=all +                              </span>
+<span class="a">  enable.idempotence=true               </span><span class="a">exactly-once produce</span>
+
+<span class="d">CONSUMER SIDE:</span>
+<span class="r">  auto.commit=true              </span><span class="r">at-most-once (data loss)</span>
+<span class="y">  manual commit after process   </span><span class="y">at-least-once (duplicates)</span>
+<span class="g">  + idempotent consumer logic   </span><span class="g">effectively exactly-once</span>
+<span class="a">  Kafka Transactions API        </span><span class="a">true exactly-once (costly)</span>
+
+<span class="d">RECOMMENDED FOR FINTECH:</span>
+<span class="g">  acks=all + idempotent=true (Kafka 3 default)
+  + manual AFTER_PROCESSING commit
+  + deduplication by event ID on consumer side</span></pre>
+      <div class="key-insight">⚡ "Exactly-once" end-to-end = Kafka transactions + idempotent consumer. Usually at-least-once + idempotency is enough and cheaper.</div>
+    </div>
+
+    <div class="diag-card">
+      <h4>Consumer Offset &amp; Lag</h4>
+      <pre class="dg"><span class="d">Partition 0 offsets:
+[0][1][2][3][4]</span><span class="g">[5]</span><span class="d">[6][7]</span><span class="a">[8]</span><span class="d">[9 latest]
+                ↑               ↑
+         </span><span class="g">committed (5)    </span><span class="a">current position (8)</span>
+
+<span class="y">  LAG = latest_offset − committed_offset = 4</span>
+
+<span class="d">  On crash at pos 8:
+  next start = committed offset </span><span class="g">(5)</span>
+<span class="d">  messages 5,6,7 re-delivered → </span><span class="y">duplicates OK</span>
+<span class="d">  if consumer is idempotent.
+
+REBALANCE triggers:
+</span><span class="b">  + consumer joins group</span>
+<span class="b">  - consumer leaves or crashes</span>
+<span class="r">  ~ max.poll.interval.ms exceeded (processing too slow)</span>
+<span class="d">  → ALL consumers pause during rebalance
+
+Mitigations:</span>
+<span class="g">  Static group membership (group.instance.id)</span>
+<span class="g">  Tune max.poll.records to avoid poll timeout</span></pre>
+      <div class="key-insight">⚡ Monitor consumer lag in Grafana (kafka_consumergroup_lag). Alert when lag grows continuously — not just spikes. Sustained growth = consumer can't keep up.</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="diag-section">
+  <div class="diag-section-h">Security — OAuth2, JWT, Zero Trust</div>
+  <div class="diag-grid">
+
+    <div class="diag-card" style="grid-column:1/-1">
+      <h4>OAuth2 Authorization Code + PKCE — Full Flow</h4>
+      <pre class="dg"><span class="b">  Browser/SPA           App Server (BFF)        IdP (Keycloak / Entra)</span>
+<span class="d">       │                      │                          │
+       │── GET /protected ───→│                          │
+       │← 302 Redirect ───────│                          │
+       │                      │                          │</span>
+<span class="a">       │── GET /authorize?code_challenge=SHA256(verifier)&response_type=code&client_id=… ──→│</span>
+<span class="d">       │                      │       user authenticates (+ MFA if required)  │
+       │                      │                          │
+       │← 302 /callback?code=XYZ ────────────────────────│</span>
+<span class="d">       │                      │                          │
+       │── POST /callback ───→│                          │
+       │   (brings code XYZ)  │── POST /token ──────────→│</span>
+<span class="a">       │                      │   code=XYZ               │
+       │                      │   code_verifier=… ←─ only app knows this</span>
+<span class="d">       │                      │         IdP verifies: SHA256(verifier)==challenge │
+       │                      │← access_token (JWT) ──────│
+       │                      │  refresh_token             │
+       │← 200 + session cookie│  id_token                 │
+       │                      │                          │
+       │── GET /api/orders ──→│  validate JWT locally    │
+       │                      │  (iss, aud, exp, sig)    │
+       │                      │── forwarded + Bearer ────→ microservice
+       │← 200 orders ─────────│← data ────────────────────│</span>
+<span class="r">
+  Security rule: verify iss + aud + exp + signature. Missing aud = token replay attack possible.</span></pre>
+      <div class="key-insight">⚡ PKCE: code_verifier never leaves the app. code_challenge = BASE64URL(SHA256(verifier)). Even if someone intercepts the code from the redirect URL, they can't exchange it.</div>
+    </div>
+
+    <div class="diag-card">
+      <h4>JWT Anatomy</h4>
+      <pre class="dg"><span class="d">Token = </span><span class="b">HEADER</span><span class="d">.</span><span class="a">PAYLOAD</span><span class="d">.</span><span class="y">SIGNATURE</span>
+
+<span class="b">HEADER</span><span class="d"> (base64url, not encrypted):
+  { "alg": "RS256",    ← </span><span class="r">never accept alg:none!</span>
+<span class="d">    "typ": "JWT",
+    "kid": "key-1" }   ← used to look up public key in JWKS
+
+</span><span class="a">PAYLOAD</span><span class="d"> (base64url, NOT secret — anyone can decode!):
+  { "iss": "https://idp.acme.com",  ← </span><span class="r">MUST validate</span>
+<span class="d">    "aud": "payment-service",       ← </span><span class="r">MUST validate</span>
+<span class="d">    "sub": "user-uuid-123",
+    "exp": 1700000300,              ← </span><span class="r">MUST validate</span>
+<span class="d">    "iat": 1700000000,
+    "roles": ["USER"] }
+
+</span><span class="y">SIGNATURE</span><span class="d">:
+  RSA_SIGN( SHA256(header + "." + payload), privateKey )
+  Verified with public key from JWKS endpoint.
+
+</span><span class="r">Common attacks:
+  alg:none    → library accepts unsigned token
+  weak secret → HS256 brute-forced offline
+  kid inject  → ../../dev/null or SQL injection</span></pre>
+      <div class="key-insight">⚡ Payload is base64 — not encrypted. Never put passwords or PII in JWT. Use RS256 (asymmetric) not HS256 (symmetric) for microservices.</div>
+    </div>
+
+    <div class="diag-card">
+      <h4>Zero Trust vs Perimeter Security</h4>
+      <pre class="dg"><span class="d">OLD MODEL — Perimeter / Castle &amp; Moat:</span>
+<span class="d">  ┌──── Firewall / VPN ─────────────────┐
+  │  "inside the network = trusted"      │</span>
+<span class="g">  │  DB   ←──── App    ←──── Service   │</span>
+<span class="d">  │   (no auth between internal services) │
+  └──────────────────────────────────────┘</span>
+<span class="r">  Problem: one breach → lateral movement everywhere</span>
+
+<span class="d">ZERO TRUST — Never trust, always verify:</span>
+<span class="d">  Every service call requires:</span>
+<span class="a">  1. Identity  (mTLS certificate / JWT)</span>
+<span class="a">  2. Auth      (RBAC / ABAC policy check)</span>
+<span class="a">  3. Least-priv (only what's needed)</span>
+<span class="a">  4. Auditability (every call logged)</span>
+<span class="d">
+</span><span class="b">  Service Mesh (Istio) implements mTLS automatically:
+  every sidecar proxy ↔ sidecar proxy is mutually authenticated
+  policy enforced at mesh level, not per-app code</span></pre>
+      <div class="key-insight">⚡ Zero Trust is the model; mTLS + short-lived tokens are the implementation. In SYNTAX enterprise clients: path is VPN → API gateway auth → eventually full mTLS mesh.</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="diag-section">
+  <div class="diag-section-h">Kubernetes &amp; Docker — Visual Reference</div>
+  <div class="diag-grid">
+
+    <div class="diag-card">
+      <h4>Kubernetes Object Hierarchy</h4>
+      <pre class="dg"><span class="a">CLUSTER</span>
+<span class="d">  └── Namespace: </span><span class="b">production</span>
+<span class="d">      ├── Deployment: order-svc</span>
+<span class="d">      │   └── ReplicaSet (N replicas)</span>
+<span class="d">      │       ├── Pod (node-1)</span>
+<span class="a">      │       │   ├── Container: app:8080</span>
+<span class="b">      │       │   └── Container: otel-sidecar</span>
+<span class="d">      │       └── Pod (node-2)</span>
+<span class="a">      │           └── Container: app:8080</span>
+<span class="y">      ├── Service: order-svc (ClusterIP)</span>
+<span class="d">      │   └── DNS: order-svc.production.svc.cluster.local</span>
+<span class="d">      │   └── → load-balances to all healthy pods</span>
+<span class="b">      ├── Ingress → order-svc:80</span>
+<span class="r">      ├── Secret: db-creds (base64, encrypt at rest!)</span>
+<span class="d">      ├── ConfigMap: app-config</span>
+<span class="g">      ├── HPA: min=2 max=20 cpu=70%</span>
+<span class="d">      └── PDB: maxUnavailable=1</span>
+<span class="d">
+  Pod gets:  ClusterIP (ephemeral)
+  Service gets: stable ClusterIP + DNS name</span></pre>
+      <div class="key-insight">⚡ Pods are ephemeral. Always access via Service DNS. PDB prevents draining all pods simultaneously during node maintenance.</div>
+    </div>
+
+    <div class="diag-card">
+      <h4>Pod Lifecycle &amp; Probes</h4>
+      <pre class="dg"><span class="d">  Container starts
+        ↓</span>
+<span class="y">  startupProbe (periodSeconds=10, failureThreshold=30)
+  → gives slow apps up to 300s to start
+  → FAIL = container restart</span>
+<span class="d">        ↓ passes once</span>
+<span class="d">  ┌─ running in parallel ──────────────────┐</span>
+<span class="g">  │  readinessProbe                         │</span>
+<span class="d">  │  FAIL = removed from Service endpoints │</span>
+<span class="d">  │  (no traffic, NO restart)              │</span>
+<span class="a">  │  livenessProbe                          │</span>
+<span class="d">  │  FAIL = container killed + restarted   │
+  └────────────────────────────────────────┘
+
+</span><span class="r">  RULE: liveness must be LESS sensitive than readiness</span>
+<span class="d">  Never check slow dependencies in liveness!
+  → liveness on DB check → DB hiccup → kills ALL pods
+
+</span><span class="y">  SIGTERM received:
+  1. preStop hook runs (sleep 5 = drain time)
+  2. Pod removed from Service endpoints
+  3. In-flight requests complete
+  4. Process exits
+  5. SIGKILL after terminationGracePeriodSeconds=30</span></pre>
+      <div class="key-insight">⚡ spring.lifecycle.timeout-per-shutdown-phase=30s + server.shutdown=graceful handles in-flight requests on SIGTERM without 502 errors.</div>
+    </div>
+
+    <div class="diag-card">
+      <h4>Docker Multi-Stage Build &amp; Layer Cache</h4>
+      <pre class="dg"><span class="d">─── Stage 1: BUILD ─────────────────────────────
+</span><span class="b">FROM eclipse-temurin:21-jdk AS build</span>
+<span class="g">COPY pom.xml .                   ← layer 1: rare change</span>
+<span class="g">RUN mvn dependency:go-offline    ← layer 2: cached if pom unchanged</span>
+<span class="y">COPY src ./src                   ← layer 3: changes often</span>
+<span class="y">RUN mvn package -DskipTests      ← layer 4: rebuilds on code change</span>
+<span class="a">RUN java -Djarmode=layertools -jar target/*.jar extract</span>
+<span class="d">   ↳ splits jar into: dependencies / spring-boot-loader /
+     snapshot-dependencies / application
+
+─── Stage 2: RUNTIME ───────────────────────────</span>
+<span class="b">FROM eclipse-temurin:21-jre   </span><span class="g">← no JDK in prod image</span>
+<span class="d">RUN useradd -r app             </span><span class="r">← non-root (required for OpenShift)</span>
+<span class="g">COPY --from=build dependencies/         ← almost never rebuilds</span>
+<span class="g">COPY --from=build spring-boot-loader/   ← almost never rebuilds</span>
+<span class="y">COPY --from=build snapshot-dependencies/ ← rebuilds on SNAPSHOT bump</span>
+<span class="r">COPY --from=build application/          ← rebuilds every commit</span>
+<span class="d">USER app
+ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]</span></pre>
+      <div class="key-insight">⚡ Layer cache optimization makes CI builds go from 3 min → 20 sec. Most layers hit cache on code-only changes — only the 'application' layer rebuilds.</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="diag-section">
+  <div class="diag-section-h">Data Architecture — Visual Patterns</div>
+  <div class="diag-grid">
+
+    <div class="diag-card">
+      <h4>Polyglot Persistence — Right Tool Per Job</h4>
+      <pre class="dg"><span class="d">         ┌───────── SERVICE ─────────────────┐</span>
+         <span class="d">↓</span>
+<span class="a">  TRANSACTIONS (orders, payments, accounts)</span>
+<span class="a">  → PostgreSQL / DB2 / Oracle</span>
+<span class="d">     ACID · strong consistency · JOINs
+         ↓ CDC / events</span>
+<span class="b">  SEARCH (product catalog, full-text)</span>
+<span class="b">  → Elasticsearch / OpenSearch</span>
+<span class="d">     Inverted index · fuzzy · facets · eventual
+         ↓</span>
+<span class="y">  CACHE / SESSION (hot data, rate limits)</span>
+<span class="y">  → Redis</span>
+<span class="d">     Sub-ms · TTL · pub/sub · Lua scripts
+         ↓</span>
+<span class="g">  EVENTS / AUDIT (activity feed, log)</span>
+<span class="g">  → Kafka → S3/Parquet (data lake)</span>
+<span class="d">     Durable · replayable · streaming
+         ↓</span>
+<span class="r">  ANALYTICS (dashboards, OLAP queries)</span>
+<span class="r">  → ClickHouse / BigQuery / Redshift</span>
+<span class="d">     Columnar · aggregations · fast scans</span></pre>
+      <div class="key-insight">⚡ Source of truth = RDBMS. All other stores = derived views. Keep sync paths (CDC/events) explicit, monitored, and recoverable.</div>
+    </div>
+
+    <div class="diag-card">
+      <h4>CDC Pipeline (Debezium)</h4>
+      <pre class="dg"><span class="a">  PostgreSQL</span>
+<span class="d">  └── WAL (Write-Ahead Log)
+           │
+           ▼ (logical replication slot)</span>
+<span class="b">  Debezium Connector (Kafka Connect)</span>
+<span class="d">  reads changes as they happen
+           │
+           ▼ change event:</span>
+<span class="y">  { "op":"u", "before":{…}, "after":{…}, "ts":… }</span>
+<span class="d">           │
+           ▼</span>
+<span class="a">  Kafka: postgres.public.orders</span>
+<span class="d">         ↙          ↓          ↘</span>
+<span class="b">  Search Index   Analytics    Read Model</span>
+<span class="d">  (Elasticsearch)(ClickHouse) (Denorm view)
+</span>
+<span class="g">  Outbox table → Debezium → Kafka = reliable event bus</span>
+<span class="r">  Monitor: replication slot lag → disk fills if consumer is slow!</span></pre>
+      <div class="key-insight">⚡ WAL-based CDC adds ~5-50ms latency. Must monitor replication slot lag — a slow consumer causes WAL retention and disk exhaustion on the DB server.</div>
+    </div>
+
+    <div class="diag-card">
+      <h4>HikariCP Pool Sizing — Little's Law</h4>
+      <pre class="dg"><span class="a">  Little's Law:  N = λ × W</span>
+
+<span class="d">  N = connections needed concurrently
+  λ = queries per second
+  W = average query duration (seconds)
+
+  Example:
+  1000 queries/sec × avg 10ms = </span><span class="g">10 connections</span>
+<span class="d">  Yes — just 10 is often enough!
+
+  IBM/HikariCP rule of thumb:
+  </span><span class="a">pool = (DB server cores × 2) + spindles</span>
+<span class="d">  4-core SSD DB → pool ≈ </span><span class="y">10</span>
+
+<span class="d">  For 10 app instances:
+  total pool / instances = </span><span class="g">10/10 = 1–2 per app</span>
+
+<span class="d">  Health signals:
+  hikaricp_connections_pending = 0    </span><span class="g">→ healthy</span>
+<span class="y">  hikaricp_connections_pending &gt; 0    → pool exhaustion</span>
+<span class="r">  hikaricp_connections_timeout rising → queries too slow</span>
+
+<span class="d">  Fix: NOT "increase pool" — investigate slow queries first</span></pre>
+      <div class="key-insight">⚡ Adding connections above saturation point REDUCES throughput (contention). Profile before tweaking pool size.</div>
+    </div>
+
+    <div class="diag-card">
+      <h4>Distributed Tracing — Trace &amp; Span Hierarchy</h4>
+      <pre class="dg"><span class="d">  TraceID: </span><span class="a">7f3a9c2b</span><span class="d">  (propagated via traceparent header)
+
+  Timeline (ms):</span>
+<span class="b">  API Gateway    [────────────────────────── 280ms]</span>
+<span class="b">   spanID:001</span>
+<span class="d">      │</span>
+<span class="a">      ├─ Order Service [─────────────────── 220ms]</span>
+<span class="a">      │  spanID:002</span>
+<span class="d">      │     │</span>
+<span class="y">      │     ├─ DB: SELECT orders [─── 25ms]</span>
+<span class="y">      │     │  spanID:003</span>
+<span class="d">      │     │</span>
+<span class="b">      │     └─ Payment Service [────────── 180ms]</span>
+<span class="b">      │        spanID:004</span>
+<span class="d">      │              │</span>
+<span class="r">      │              └─ Stripe API [──── 150ms]</span>
+<span class="r">      │                 spanID:005  ← slow! root cause</span>
+<span class="d">      │</span>
+<span class="g">      └─ Notif Service [── 18ms]</span>
+<span class="g">         spanID:006
+
+</span><span class="d">  Click span:005 in Jaeger → correlated logs via MDC traceId</span></pre>
+      <div class="key-insight">⚡ OTel + Micrometer Tracing auto-injects traceId/spanId into every log line via MDC. One click in Grafana: trace → logs → back. Cuts MTTR dramatically.</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="diag-section">
+  <div class="diag-section-h">Spring Boot — Request Pipeline &amp; Transaction Flow</div>
+  <div class="diag-grid">
+
+    <div class="diag-card" style="grid-column:1/-1">
+      <h4>HTTP Request Lifecycle in Spring Boot</h4>
+      <pre class="dg"><span class="d">  HTTP Request</span>
+<span class="d">       ↓</span>
+<span class="b">  [Tomcat / Netty]</span><span class="d"> — thread assigned (or virtual thread)</span>
+<span class="d">       ↓</span>
+<span class="y">  [SecurityFilterChain]</span><span class="d"> — JWT validation, CSRF, CORS headers</span>
+<span class="d">       ↓</span>
+<span class="b">  [DispatcherServlet]</span><span class="d"> — HandlerMapping finds @RequestMapping</span>
+<span class="d">       ↓</span>
+<span class="a">  [HandlerInterceptor.preHandle()]</span><span class="d"> — logging, MDC setup, rate limit</span>
+<span class="d">       ↓</span>
+<span class="a">  [@RestController method]</span>
+<span class="d">       ↓ calls @Service</span>
+<span class="g">  [@Transactional proxy]</span><span class="d"> — begins transaction (HikariCP conn acquired)</span>
+<span class="d">       ↓</span>
+<span class="a">  [Service + Domain Logic]</span>
+<span class="d">       ↓ calls @Repository</span>
+<span class="a">  [Spring Data JPA / JdbcTemplate]</span><span class="d"> — SQL executed</span>
+<span class="d">       ↓</span>
+<span class="g">  [@Transactional proxy]</span><span class="d"> — COMMIT / ROLLBACK, connection returned to pool</span>
+<span class="d">       ↓</span>
+<span class="b">  [HttpMessageConverter]</span><span class="d"> — Java object → JSON (Jackson)</span>
+<span class="d">       ↓</span>
+<span class="a">  [HandlerInterceptor.afterCompletion()]</span><span class="d"> — MDC cleanup, metrics record</span>
+<span class="d">       ↓</span>
+<span class="d">  HTTP Response
+
+</span><span class="r">  open-in-view=true (default!) keeps tx open during JSON serialisation
+  → lazy loading works but blocks DB connection longer → DISABLE IT</span>
+<span class="g">  spring.jpa.open-in-view=false  ← always</span></pre>
+      <div class="key-insight">⚡ @Transactional on a private method → ignored (AOP proxy bypassed). @Transactional calling another @Transactional in same class → inner annotation ignored (same proxy). Inject self or use ApplicationContext.getBean() if needed.</div>
+    </div>
+
+    <div class="diag-card">
+      <h4>Spring Security Filter Chain Order</h4>
+      <pre class="dg"><span class="d">  Incoming HTTP request
+          ↓</span>
+<span class="r">  [SecurityContextPersistenceFilter]</span>
+<span class="d">   Load/clear SecurityContext
+          ↓</span>
+<span class="y">  [CsrfFilter]</span>
+<span class="d">   Validate CSRF token (disable for JWT APIs)
+          ↓</span>
+<span class="b">  [BearerTokenAuthenticationFilter]  ← oauth2ResourceServer</span>
+<span class="d">   Extract + validate JWT
+   Populate SecurityContext with Authentication
+          ↓</span>
+<span class="a">  [ExceptionTranslationFilter]</span>
+<span class="d">   Catch AuthenticationException → 401
+   Catch AccessDeniedException → 403
+          ↓</span>
+<span class="g">  [FilterSecurityInterceptor / AuthorizationFilter]</span>
+<span class="d">   Check URL-level security rules
+          ↓</span>
+<span class="d">  Your @RestController
+          ↓</span>
+<span class="g">  @PreAuthorize checked (method-level security)</span>
+<span class="d">   via @EnableMethodSecurity AOP proxy</span></pre>
+      <div class="key-insight">⚡ Filters run in defined order. Custom filter position matters — @Order or addFilterBefore/After in SecurityFilterChain config. JWT validation must come before authorization.</div>
+    </div>
+
+    <div class="diag-card">
+      <h4>Token Bucket Rate Limiting</h4>
+      <pre class="dg"><span class="d">  Bucket capacity: 100 tokens
+  Refill rate: 10 tokens/second
+
+  t=0s:  bucket=[</span><span class="g">100 tokens</span><span class="d">]
+
+  Request arrives: cost 1 token
+  t=0.1s: [</span><span class="g">99 tokens</span><span class="d">]
+
+  Burst: 20 requests at once
+  t=1s:  [</span><span class="y">80 tokens</span><span class="d">]  ← allowed (burst OK)
+
+  High traffic: 15 req/s incoming, 10/s refill
+  t=10s: [</span><span class="r">0 tokens</span><span class="d">]  ← bucket empty → 429 Too Many Requests
+
+  Token Bucket vs other strategies:
+  </span><span class="g">Token Bucket  </span><span class="d">allows burst up to capacity</span>
+<span class="y">  Leaky Bucket  </span><span class="d">constant output rate, smooths bursts</span>
+<span class="b">  Fixed Window  </span><span class="d">simple, allows burst at window edge</span>
+<span class="a">  Sliding Window</span><span class="d"> precise, memory-heavy</span>
+
+<span class="d">  Spring impl: Bucket4j
+</span><span class="a">  @RateLimiter(name="api") on controller method</span></pre>
+      <div class="key-insight">⚡ Always return Retry-After header on 429. Rate limit per user + per IP to prevent both abuse and noisy-neighbour problems.</div>
+    </div>
+
+  </div>
+</div>`;
+})();
 
 // ============================================================
 // GLOSSARY / ΟΡΟΛΟΓΙΑ
