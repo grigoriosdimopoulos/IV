@@ -414,6 +414,8 @@
       <button class="cat-filter" data-cat="Data">Data</button>
       <button class="cat-filter" data-cat="DevOps">DevOps</button>
       <button class="cat-filter" data-cat="Security">Security</button>
+      <button class="cat-filter" data-cat="Java/JVM">Java/JVM</button>
+      <button class="cat-filter" data-cat="IBM Stack">IBM Stack</button>
     </div>
     <div class="glossary-grid" id="glossaryGrid"></div>
     <div class="glossary-empty" id="glossaryEmpty" style="display:none">No terms match your search.</div>
@@ -1816,7 +1818,96 @@ const GLOSSARY = [
   {term:"Transactional Outbox", cat:"Architecture Patterns", def:"See Outbox Pattern. The 'transactional' qualifier emphasises that the outbox write happens within the same ACID transaction as the business write — guaranteeing the event is published if and only if the business write commits."},
   {term:"Virtual Threads (Project Loom)", cat:"Distributed Systems", def:"JVM-managed lightweight threads (GA in Java 21). When a virtual thread blocks on I/O, the JVM unmounts it from its OS carrier thread, freeing the carrier to run other virtual threads. Enables millions of concurrent blocking threads with a small carrier pool. Simplifies code vs reactive; not a substitute for CPU parallelism."},
   {term:"HikariCP", cat:"Data", def:"The default and fastest JDBC connection pool in Spring Boot. Key insight: optimal pool size is much smaller than developers assume — roughly 2× CPU cores for the database server. Too many connections cause contention. Monitor: hikaricp_connections_pending; if sustained > 0, you have pool exhaustion."},
-  {term:"Kafka Consumer Group", cat:"Data", def:"A set of consumers sharing a single logical subscription to a topic. Partitions are distributed among consumers in the group — each partition is consumed by exactly one consumer at a time. Scaling out = adding consumers to the group (up to the partition count). Rebalancing occurs when consumers join/leave."}
+  {term:"Kafka Consumer Group", cat:"Data", def:"A set of consumers sharing a single logical subscription to a topic. Partitions are distributed among consumers in the group — each partition is consumed by exactly one consumer at a time. Scaling out = adding consumers to the group (up to the partition count). Rebalancing occurs when consumers join/leave."},
+
+  // === Java / JVM ===
+  {term:"TLAB (Thread-Local Allocation Buffer)", cat:"Java/JVM", def:"A private slice of Eden Space allocated per thread. Object allocation is a cheap bump-pointer increment with no synchronisation. This is why short-lived object creation is nearly free in Java — the slow path (CAS on the shared Eden pointer) is rare."},
+  {term:"Metaspace", cat:"Java/JVM", def:"Native memory region (Java 8+) that replaced PermGen. Holds class metadata, bytecode, constant pool, JIT-compiled code descriptors. Grows dynamically by default — cap with -XX:MaxMetaspaceSize to catch classloader leaks (common with Spring AOP, CGLib, Hibernate proxies)."},
+  {term:"JFR (Java Flight Recorder)", cat:"Java/JVM", def:"Low-overhead, always-on profiling built into the JVM. Records GC events, JIT compilation, thread activity, I/O, locks. Activate with: jcmd <pid> JFR.start duration=60s filename=profile.jfr. Analyse in JDK Mission Control. Essential for production performance diagnosis."},
+  {term:"GraalVM Native Image", cat:"Java/JVM", def:"Ahead-of-time compilation that produces a native binary from Java code + JDK. Startup in milliseconds, low memory footprint, no JIT warmup. Trade-off: lower peak throughput than JIT-warmed JVM; reflection and dynamic class loading need explicit config. Ideal for serverless, CLI tools, scale-to-zero workloads. Spring Boot 3 supports native via spring-boot-maven-plugin."},
+  {term:"CompletableFuture", cat:"Java/JVM", def:"Java 8+ async composition API. Supports chaining (thenApply, thenCompose, thenCombine), exception handling (exceptionally, handle), and parallel forking (allOf, anyOf). Backed by ForkJoinPool by default — pass a custom Executor for blocking operations. In Java 21, prefer structured concurrency (StructuredTaskScope) for clarity."},
+  {term:"ThreadLocal", cat:"Java/JVM", def:"Thread-scoped variable. Each thread has its own independent copy. Common use: request context (user ID, trace ID in MDC), database connections, SimpleDateFormat instances. Gotcha: in thread pools and virtual threads, always remove() in a finally block — otherwise the previous request's data leaks into the next."},
+  {term:"ForkJoinPool", cat:"Java/JVM", def:"Thread pool designed for divide-and-conquer tasks. Uses work-stealing: idle threads steal tasks from busy threads' queues. Backing pool for parallel streams and CompletableFuture (unless overridden). Default parallelism = number of CPU cores. Not suitable for blocking I/O tasks — use a separate pool or virtual threads."},
+  {term:"Heap Dump / Thread Dump", cat:"Java/JVM", def:"Heap dump: snapshot of all objects in memory. Captured via jmap -dump:live,format=b,file=heap.hprof <pid> or -XX:+HeapDumpOnOutOfMemoryError. Analyse with Eclipse MAT — find leak suspects and dominator tree. Thread dump: snapshot of all thread states and stack traces. Via jstack <pid> or kill -3. Use to diagnose deadlocks and thread starvation."},
+  {term:"ClassLoader", cat:"Java/JVM", def:"Responsible for loading .class files at runtime. Hierarchy: Bootstrap → Extension → Application → Custom. In Java web apps, each deployment has its own ClassLoader for isolation. ClassLoader leaks (a new ClassLoader is created but never GC'd) cause Metaspace exhaustion — common in hot-reload frameworks and old Java EE servers."},
+  {term:"CountDownLatch / CyclicBarrier", cat:"Java/JVM", def:"Coordination primitives. CountDownLatch: N threads signal; one waiter unblocks when count reaches 0. One-shot use. CyclicBarrier: N threads all arrive at the barrier before any proceeds. Reusable. Use case: parallel test setup, phase synchronisation in batch jobs. For modern code, prefer CompletableFuture.allOf or StructuredTaskScope."},
+
+  // === Architecture Patterns (more) ===
+  {term:"Hexagonal Architecture", cat:"Architecture Patterns", def:"Also called Ports & Adapters. The domain/application core has no dependencies on infrastructure. It exposes 'ports' (interfaces). 'Adapters' implement those interfaces and connect to the outside world (HTTP, DB, Kafka, etc.). Makes the domain independently testable and infrastructure swappable without touching business logic."},
+  {term:"Clean Architecture", cat:"Architecture Patterns", def:"Robert Martin's concentric-layer model: Entities → Use Cases → Interface Adapters → Frameworks & Drivers. Dependency rule: outer layers depend on inner ones, never the reverse. Similar intent to Hexagonal. The shared insight: your domain model should know nothing about Spring, JPA, Kafka, or any framework."},
+  {term:"Repository Pattern", cat:"Architecture Patterns", def:"Abstracts data access behind a collection-like interface. The domain layer calls OrderRepository.findById() without knowing whether it hits SQL, NoSQL, or a mock. Enables testability (mock the repo in unit tests) and decouples domain logic from persistence concerns. Spring Data JPA implements this pattern out of the box."},
+  {term:"API Gateway Pattern", cat:"Architecture Patterns", def:"Single entry point for all client requests. Responsibilities: authentication/authorisation, rate limiting, SSL termination, request routing, protocol translation (REST → gRPC), response aggregation, caching. Examples: AWS API Gateway, Kong, Spring Cloud Gateway. Prevents clients from knowing the internal service topology."},
+  {term:"Backend for Frontend (BFF)", cat:"Architecture Patterns", def:"A dedicated API gateway per client type (mobile BFF, web BFF, third-party BFF). Each BFF aggregates exactly the data that client needs, in the shape it needs. Avoids the generic API becoming a bloated compromise. GraphQL is often the technology of choice for BFFs."},
+  {term:"Sidecar Pattern", cat:"Architecture Patterns", def:"Deploy a secondary container alongside the main application container in the same pod. The sidecar handles a cross-cutting concern: proxying (Envoy in Istio), log shipping, certificate rotation, configuration reloading, secrets injection (Vault agent). The application code stays unaware of these concerns."},
+  {term:"Aggregate Root", cat:"Architecture Patterns", def:"DDD concept. An Aggregate is a cluster of domain objects that must remain consistent together. The Aggregate Root is the only entry point: external code can only hold references to the root, never to inner entities. All modifications go through the root, which enforces the cluster's invariants. Example: Order (root) contains OrderItems — you never modify an OrderItem directly."},
+  {term:"Domain Event", cat:"Architecture Patterns", def:"Something significant that happened in the domain, expressed in past tense: OrderPlaced, PaymentFailed, ShipmentDispatched. Domain events are facts — immutable. They can trigger reactions within the same bounded context (synchronous, same transaction) or be published for other contexts (integration events, async)."},
+  {term:"Integration Event", cat:"Architecture Patterns", def:"A domain event published across bounded context boundaries (via Kafka, RabbitMQ, or REST webhook). Contrast with domain events (same BC, same transaction). Integration events must be versioned and backward-compatible. Use the Outbox Pattern to publish them reliably."},
+  {term:"Value Object", cat:"Architecture Patterns", def:"A domain concept with no identity — defined entirely by its attributes. Two Money(100, EUR) instances are equal. Immutable by design. Examples: Money, DateRange, Address, Coordinates. Contrast with Entity, which has a unique ID and lifecycle. Value objects can be safely shared and compared by value."},
+  {term:"Compensating Transaction", cat:"Architecture Patterns", def:"In a Saga, the action that 'undoes' a previously committed step when a later step fails. Not a rollback — it creates a new forward event (e.g. RefundCard, not 'un-charge'). Must be idempotent and handle the case where the original step partially executed. The original event and its compensation both exist in the audit log."},
+  {term:"Façade Pattern", cat:"Architecture Patterns", def:"Provides a simplified interface to a complex subsystem. Common use in enterprise: a single OrderService method that orchestrates calls to inventory, payment, shipping, and notification services — hiding the complexity from callers. The Strangler Fig facade is a specific application: route new and legacy traffic through a single facade during migration."},
+  {term:"Observer / Event-Driven", cat:"Architecture Patterns", def:"Publisher emits events; subscribers react without the publisher knowing who they are. Decouples components in time and knowledge. In Spring: @EventListener for in-process events. For cross-service: Kafka/RabbitMQ topics. Risk: creates implicit dependencies and makes flow hard to trace — compensate with good distributed tracing."},
+
+  // === Distributed Systems (more) ===
+  {term:"Linearizability", cat:"Distributed Systems", def:"The strongest consistency model: every operation appears to take effect instantaneously at some point between its invocation and response, and all operations see a single consistent global order. Makes a distributed system behave like a single-threaded sequential one. Provided by etcd, Zookeeper, Spanner. Expensive — requires consensus on every write."},
+  {term:"Read Your Writes", cat:"Distributed Systems", def:"A session consistency guarantee: after you write a value, any subsequent read by the same client will see that write. Does NOT guarantee other clients see it immediately. Achieved by routing reads to the primary/leader for the same session, or by using session-pinned replicas. Important for user-facing operations (e.g., form submit then page refresh)."},
+  {term:"Consistent Hashing", cat:"Distributed Systems", def:"A hash ring technique for distributing keys across nodes. Adding or removing a node only remaps 1/N of the keys (vs full re-hashing). Used in Cassandra, DynamoDB, Redis Cluster, and CDN edge node selection. Virtual nodes (vnodes) add multiple points per physical node to improve load distribution."},
+  {term:"Raft / Paxos", cat:"Distributed Systems", def:"Consensus algorithms that allow a cluster of nodes to agree on a value despite failures. Raft (used by etcd, CockroachDB, Consul) is designed to be understandable; Paxos is more theoretical. A quorum (majority of nodes) must agree before a write is committed. Provides linearisable consistency. Systems like Kafka (KRaft mode) use Raft for metadata consensus."},
+  {term:"Gossip Protocol", cat:"Distributed Systems", def:"Epidemic-style communication where each node periodically shares its state with a random peer. Information spreads exponentially. No single point of failure. Used by Cassandra (ring membership and failure detection), Redis Cluster, and Consul for service mesh. Convergence is probabilistic and eventual, not guaranteed in bounded time."},
+  {term:"Distributed Lock", cat:"Distributed Systems", def:"Mutual exclusion across multiple processes/services. Implemented via Redis (Redlock algorithm or single-node SET NX EX), ZooKeeper (ephemeral nodes), or database advisory locks. Caution: distributed locks have subtle failure modes (lock expiry while holder is still executing). For most use cases, prefer idempotency + retry over distributed locking."},
+  {term:"Thundering Herd", cat:"Distributed Systems", def:"When a shared resource becomes available (cache expires, circuit re-closes, connection pool frees), many waiting clients rush to use it simultaneously, causing a spike that can overwhelm the resource. Mitigations: jitter on retry delays, probabilistic early cache refresh, request coalescing (only one request fetches; others wait and use the result)."},
+  {term:"Backpressure", cat:"Distributed Systems", def:"A mechanism for a consumer to signal to a producer to slow down when it cannot keep up. Fundamental in reactive systems (Project Reactor, Akka Streams). Without it, a fast producer overwhelms a slow consumer, causing OOM or message loss. Implemented via bounded queues (drop or block on full), reactive pull model, or TCP flow control."},
+  {term:"At-Least-Once / At-Most-Once / Exactly-Once", cat:"Distributed Systems", def:"Delivery guarantees. At-most-once: message may be lost, never duplicated (fire and forget). At-least-once: message delivered but may duplicate (retry on failure) — consumer must be idempotent. Exactly-once: delivered once and only once — hardest, requires coordination (Kafka transactional API, idempotent producer). For most enterprise workloads: at-least-once + idempotent consumer = effectively exactly-once."},
+  {term:"Head-of-Line Blocking", cat:"Distributed Systems", def:"A slow request at the front of a queue blocks all subsequent requests even if they would complete quickly. In HTTP/1.1: one slow response per connection blocks everything. HTTP/2 multiplexing solves it at the connection level. In message queues: a poison pill or slow consumer blocks the partition. Mitigation: multiple consumers, DLQ for stuck messages, circuit breaker."},
+
+  // === Resilience ===
+  {term:"Dead Letter Queue (DLQ)", cat:"Resilience", def:"A queue/topic that receives messages that could not be processed after the maximum number of retries. Prevents poison pill messages from blocking the main queue forever. Operational requirement: DLQs must be monitored and have an operational runbook — they are not a bin; they are an alert. Every message in the DLQ represents a failure that must be investigated."},
+  {term:"Load Shedding", cat:"Resilience", def:"Deliberately rejecting requests when a service is at or near capacity, to protect itself from collapse. Return 503 with Retry-After header rather than queuing indefinitely. Controlled degradation is better than total failure. Works with priority: shed low-priority requests first. Contrasted with rate limiting (which limits specific clients) — load shedding is about self-protection."},
+  {term:"Graceful Degradation", cat:"Resilience", def:"When a dependency is unavailable, serving a degraded-but-functional response rather than failing entirely. Examples: return cached product catalog when the pricing service is down; show 'reviews unavailable' instead of a blank page. Requires explicit fallback logic. Combined with circuit breaker: breaker opens → fallback activates."},
+  {term:"Chaos Engineering", cat:"Resilience", def:"Intentionally injecting failures (network partitions, latency spikes, process kills) into production or staging to verify that resilience mechanisms work. Pioneered by Netflix (Chaos Monkey). Formalised by principles: hypothesis-driven, minimal blast radius, run in production when possible. Chaos Toolkit and Litmus are open-source tools. The goal: find weaknesses before users do."},
+  {term:"Rate Limiting (Token Bucket)", cat:"Resilience", def:"Clients accumulate tokens at a fixed rate (refill rate). Each request consumes a token. Allows bursting (spending saved tokens) up to bucket capacity. Bucket4j is the Java implementation. Token bucket is the most common strategy for API rate limiting. Compare: Leaky Bucket (constant output rate, smooths bursts), Sliding Window Log (precise but memory-intensive), Fixed Window (simple but allows burst at window boundary)."},
+  {term:"Poison Pill", cat:"Resilience", def:"A message that consistently causes consumer crashes or processing failures. With at-least-once delivery, the broken message is retried indefinitely, blocking the partition/queue. Solution: max retry count → move to DLQ. In Kafka: set max.poll.records=1 and handle exceptions per-message so one bad message doesn't crash the entire consumer loop."},
+
+  // === Messaging ===
+  {term:"Schema Registry", cat:"Data", def:"A centralised repository for message schemas (Avro, Protobuf, JSON Schema). Producers register schemas; consumers fetch them by schema ID embedded in each message. Enables schema evolution with compatibility rules (BACKWARD, FORWARD, FULL). Confluent Schema Registry is standard in Kafka ecosystems. Avro is compact and schema-enforced; Protobuf adds gRPC compatibility."},
+  {term:"Event-Carried State Transfer", cat:"Architecture Patterns", def:"An event that carries the full current state of the entity, not just what changed. Recipients can update their local copy without calling back to the source. Trades bandwidth for reduced coupling (no synchronous queries). Contrast with Event Notification (event carries only a reference; receiver must call back to get data — creates coupling)."},
+  {term:"Compacted Topic (Kafka)", cat:"Data", def:"A Kafka topic where only the latest message per key is retained. Older messages with the same key are deleted during compaction (log cleaner runs in background). Used for materialised views and change streams where only current state matters. Start a new consumer from the beginning → read the current state of every entity."},
+  {term:"Consumer Lag", cat:"Data", def:"How far behind a Kafka consumer group is from the latest offset on a partition. Lag = latest offset − committed offset. High sustained lag = consumer processing too slowly. Monitor via Kafka's built-in metrics or Burrow. Alert when lag grows continuously (not just spikes). Root causes: slow processing, GC pauses, downstream bottlenecks, insufficient consumer parallelism."},
+
+  // === Database (more) ===
+  {term:"Sharding", cat:"Data", def:"Horizontal partitioning of data across multiple database nodes. Each shard holds a subset of rows. Shard key determines which node holds which data. Improves write throughput and storage capacity. Increases operational complexity: cross-shard joins are expensive; shard rebalancing is risky. In enterprise Java: consider application-level sharding (ShardingSphere) or purpose-built DBs (Cassandra, DynamoDB) before sharding PostgreSQL."},
+  {term:"Read Replica", cat:"Data", def:"A synchronously or asynchronously replicated copy of the primary database, serving read traffic. Offloads read load from the primary. Trade-off: asynchronous replication means replicas may lag (seconds to minutes). Not suitable for read-your-writes or strong consistency reads. Spring: use AbstractRoutingDataSource to route SELECTs to replica, writes to primary."},
+  {term:"Write-Ahead Log (WAL)", cat:"Data", def:"The fundamental mechanism for database crash recovery and replication. Before any data page is modified, the change is written to the WAL (sequential, durable). On crash, replay WAL to restore consistency. PostgreSQL's WAL is also the source for streaming replication and CDC (Debezium reads it). MySQL uses binlog. DB2 uses its transaction log."},
+  {term:"Query Plan / EXPLAIN ANALYZE", cat:"Data", def:"The execution strategy the query optimiser chooses. EXPLAIN ANALYZE in PostgreSQL runs the query and shows actual vs estimated rows, index usage, join methods, and timing per node. Key things to look for: sequential scans on large tables (missing index?), nested loops with high row estimates (statistics stale?), hash join spills to disk. Run ANALYZE to update statistics after bulk loads."},
+  {term:"Flyway / Liquibase", cat:"Data", def:"Database migration tools. Track which SQL scripts have been applied in a versioned changelog table. Flyway: SQL files named V1__create_orders.sql — simple, SQL-native. Liquibase: changesets in XML/YAML/SQL — more flexible, supports rollbacks. Both integrate with Spring Boot (spring.flyway.*, spring.liquibase.*). Non-negotiable for any production database — schema changes must be versioned and repeatable."},
+  {term:"OLTP vs OLAP", cat:"Data", def:"OLTP (Online Transaction Processing): many short read/write transactions, normalised schema, strong consistency. PostgreSQL, MySQL, DB2, Oracle. OLAP (Online Analytical Processing): few long analytical queries over large datasets, denormalised/columnar storage, eventual consistency acceptable. ClickHouse, BigQuery, Redshift, Snowflake. Modern data architecture: OLTP as source of truth → CDC/ETL to OLAP for analytics."},
+  {term:"Data Lake vs Data Warehouse", cat:"Data", def:"Data Lake: raw, schema-on-read storage (S3 + Parquet). Stores everything, queried with Athena/Spark. Flexible but needs governance to avoid becoming a 'data swamp'. Data Warehouse: structured, schema-on-write, optimised for SQL analytics (Redshift, BigQuery, Snowflake). Modern Lake House pattern combines both: raw lake + curated warehouse layer on top."},
+
+  // === Security (more) ===
+  {term:"mTLS (Mutual TLS)", cat:"Security", def:"Both client and server present certificates during TLS handshake. The server authenticates the client's identity, not just the other way around. Provides strong service-to-service authentication without API keys or OAuth tokens. Service meshes (Istio) provision and rotate certificates automatically. Standard for zero-trust internal network security."},
+  {term:"Zero Trust", cat:"Security", def:"Security model: never trust, always verify. No implicit trust from network location — a request from inside the corporate network is not trusted by default. Every access decision is based on identity, device health, and least-privilege policy. Implemented via mTLS, short-lived tokens, continuous authorisation, micro-segmentation. Contrast with perimeter security (trust everything inside the firewall)."},
+  {term:"CSRF (Cross-Site Request Forgery)", cat:"Security", def:"An attacker tricks a user's browser into making an authenticated request to your site from a malicious site. The browser automatically includes cookies. Mitigation: CSRF token (unique, secret, per-session value embedded in forms and validated server-side), SameSite=Strict/Lax cookie attribute, double-submit cookie. Spring Security includes CSRF protection by default for state-changing requests."},
+  {term:"XSS (Cross-Site Scripting)", cat:"Security", def:"Attacker injects malicious scripts into content served by your site. Stored XSS: injected into DB, executed for all users who load the page. Reflected XSS: injected via URL parameter, reflected in response. DOM-based XSS: JavaScript reads attacker-controlled data and writes it to the DOM. Mitigation: output encoding (escape HTML entities), Content Security Policy (CSP) header, React/Angular auto-escape by default."},
+  {term:"Principle of Least Privilege", cat:"Security", def:"Grant only the minimum permissions required to perform a task. DB user for the payment service has SELECT/INSERT on payment tables only — not DROP, not access to other tables. K8s ServiceAccount can only read its own namespace's secrets. IAM role for the app can only GetSecretValue for its specific secret. Reduces blast radius when credentials are compromised."},
+  {term:"GDPR / Right to Erasure", cat:"Security", def:"Under GDPR, users may request deletion of their personal data. In event-sourced or append-only systems this is architecturally non-trivial. Strategies: cryptographic erasure (encrypt PII with a per-user key; delete the key to make data unreadable), tombstone events (publish a 'user deleted' event that downstream views honor), PII tokenisation (replace PII with opaque tokens, store mapping in erasable table)."},
+  {term:"Encryption at Rest / in Transit", cat:"Security", def:"At rest: data encrypted when stored on disk (AES-256). Implemented at DB level (PostgreSQL pgcrypto, Transparent Data Encryption in SQL Server/DB2), storage level (AWS EBS/S3 SSE), or application level (field-level encryption for sensitive columns). In transit: TLS 1.2+ on all connections — database, internal services, queues. Non-negotiable in regulated environments. mTLS adds mutual authentication."},
+  {term:"RBAC vs ABAC", cat:"Security", def:"RBAC (Role-Based Access Control): permissions attached to roles; users assigned roles. Simple to reason about. Examples: ADMIN, EDITOR, VIEWER. ABAC (Attribute-Based Access Control): permissions derived from attributes of user, resource, and environment (user.department == resource.owner.department AND time.hour BETWEEN 9 AND 17). More flexible, harder to reason about. OPA (Open Policy Agent) implements ABAC with Rego policy language."},
+
+  // === DevOps (more) ===
+  {term:"GitOps", cat:"DevOps", def:"Operational model where the desired state of the system is declared in Git. An automated agent (ArgoCD, Flux) continuously reconciles the live state with Git. Pull-based: the agent polls Git, not a CI pipeline pushing. Benefits: full audit trail in Git history, easy rollback (revert a commit), no cluster credentials in CI pipelines. Standard for Kubernetes deployments."},
+  {term:"Infrastructure as Code (IaC)", cat:"DevOps", def:"Provision and manage infrastructure through code (Terraform, Pulumi, CloudFormation, Ansible) rather than manual processes. Benefits: version-controlled, reproducible, reviewable, testable. Terraform: declarative HCL, cloud-agnostic, state file tracks reality. Pulumi: IaC in TypeScript/Python/Go. Principle: no manual changes to production infrastructure — everything goes through code review."},
+  {term:"Immutable Infrastructure", cat:"DevOps", def:"Servers (or containers) are never modified after creation. Instead of patching in place, deploy a new image and terminate the old one. Eliminates configuration drift (environments diverging over time). Containers are the modern embodiment: each deployment is a new image layer, not a patched running instance. Enables reliable rollback: tag + revert."},
+  {term:"Feature Flag", cat:"DevOps", def:"A configuration value that enables/disables a feature at runtime without a code deployment. Enables trunk-based development (merge code that's behind a flag, enable when ready), A/B testing, canary releases, and kill switches (disable a feature causing incidents). Platforms: LaunchDarkly, Unleash, Split, or simple DB/env config. Risk: flag debt — old flags never cleaned up add complexity."},
+  {term:"HPA (Horizontal Pod Autoscaler)", cat:"DevOps", def:"Kubernetes controller that adjusts the number of pod replicas based on observed metrics (CPU, memory, custom metrics from Prometheus). Scale-out when CPU > 70%; scale-in when CPU < 30%. Custom metrics (queue depth, RPS) via KEDA (Kubernetes Event-Driven Autoscaler). Key settings: minReplicas, maxReplicas, scaleDown stabilisationWindow (prevents thrashing)."},
+  {term:"PodDisruptionBudget (PDB)", cat:"DevOps", def:"Kubernetes policy that limits how many pods of a deployment can be unavailable simultaneously during voluntary disruptions (node drains, rolling updates). Example: maxUnavailable=1 ensures at least N-1 replicas are always running during maintenance. Non-optional for production: without PDB, a rolling node drain can take all replicas of a service offline at once."},
+  {term:"Helm / Kustomize", cat:"DevOps", def:"Kubernetes deployment templating tools. Helm: package manager for K8s. Charts are parameterised templates (values.yaml overrides). Supports releases, rollback, dependency management. Kustomize: overlay-based patching, no templating language. Base + overlays (dev/staging/prod). Both solve the same problem: managing K8s YAML across environments. Kustomize is built into kubectl; Helm has richer ecosystem."},
+  {term:"Network Policy (K8s)", cat:"DevOps", def:"Kubernetes firewall rules controlling which pods can communicate with each other. Default: all pods can reach all pods (open). With Network Policy: only the payment-service can reach the payments-db pod; no other pod can. Implemented by the CNI plugin (Calico, Cilium, Weave). Non-optional in regulated environments — isolate sensitive workloads from general traffic."},
+
+  // === IBM Stack ===
+  {term:"WebSphere Liberty / Open Liberty", cat:"IBM Stack", def:"IBM's modern lightweight Java application server. Open Liberty is the open-source base; WebSphere Liberty adds IBM enterprise features. Microprofile and Jakarta EE support. Significantly lighter than traditional WebSphere. Used by SYNTAX clients migrating off full WebSphere. OpenShift-friendly: containerises cleanly. Key config: server.xml defines features (jaxrs-2.1, jdbc-4.2, mpHealth-2.2)."},
+  {term:"IBM MQ", cat:"IBM Stack", def:"Enterprise message broker by IBM. Guarantees exactly-once delivery, message ordering within a queue, and persistent storage. Used extensively in financial services, insurance, and government clients. SYNTAX context: many legacy integrations use MQ Series (now IBM MQ). JMS API is the standard Java interface. Spring JMS integrates directly. Compared to Kafka: MQ is point-to-point and guaranteed delivery; Kafka is log-based and consumer-driven."},
+  {term:"IBM Db2", cat:"IBM Stack", def:"IBM's enterprise relational database. Strong on mainframe (z/OS) and distributed. SQL-compliant but with IBM-specific extensions. Key architectural notes: row-based storage (traditional) and columnar BLU Acceleration for analytics. Isolation levels: cursor stability (CS) ≈ read committed, repeatable read (RR), read stability (RS). Spring Data JPA works with Db2 via IBM JDBC driver. SYNTAX clients frequently use Db2 for core financial data."},
+  {term:"OpenShift SCCs (Security Context Constraints)", cat:"IBM Stack", def:"OpenShift's equivalent of Kubernetes PodSecurityAdmission/PSP. Controls what a pod is allowed to do: run as root, use host networking, mount privileged volumes. Default SCC 'restricted' blocks running as root (UID 0). Spring Boot containers must be built with a non-root USER and a numeric UID for OpenShift compatibility. A common migration gotcha when moving from vanilla K8s to OpenShift."},
+  {term:"IBM API Connect", cat:"IBM Stack", def:"IBM's full lifecycle API management platform. Features: developer portal, API gateway, analytics, policy enforcement (rate limiting, OAuth, schema validation). Common in SYNTAX client environments as the enterprise API gateway. APIs defined in OpenAPI spec, deployed to the gateway as 'products' and 'APIs'. Understanding its policy model (invoke, map, gatewayscript) is useful for integration architects."}
 ];
 
 (function renderGlossary() {
@@ -2105,6 +2196,426 @@ const GLOSSARY = [
         <tr><td class="k">Dependency failure isolation</td><td>Circuit Breaker + Bulkhead + Timeout</td><td>If the dependency is synchronously required for correctness</td></tr>
         <tr><td class="k">Microservices decomposition</td><td>Domain-Driven Design bounded contexts</td><td>Team &lt;15 engineers or domain still being discovered</td></tr>
         <tr><td class="k">Zero-downtime deploy</td><td>Blue-Green (simple) or Canary (safe)</td><td>When you have DB migrations incompatible with running old code</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="cs-section">
+  <div class="cs-section-h">Resilience4j — Configuration Reference</div>
+  <div class="cs-grid">
+    <div class="cs-card"><h4>Circuit Breaker (application.yml)</h4>
+      <table class="cs-table">
+        <tr><th>Property</th><th>Default</th><th>Notes</th></tr>
+        <tr><td class="k">slidingWindowType</td><td>COUNT_BASED</td><td>COUNT_BASED or TIME_BASED</td></tr>
+        <tr><td class="k">slidingWindowSize</td><td>100</td><td>Last N calls or seconds</td></tr>
+        <tr><td class="k">failureRateThreshold</td><td>50%</td><td>Open circuit above this</td></tr>
+        <tr><td class="k">waitDurationInOpenState</td><td>60s</td><td>Time before HALF-OPEN probe</td></tr>
+        <tr><td class="k">permittedCallsInHalfOpenState</td><td>10</td><td>Probe calls before deciding</td></tr>
+        <tr><td class="k">slowCallRateThreshold</td><td>100%</td><td>% of slow calls to open</td></tr>
+        <tr><td class="k">slowCallDurationThreshold</td><td>60s</td><td>What counts as 'slow'</td></tr>
+        <tr><td class="k">recordExceptions</td><td>Throwable</td><td>Which exceptions count as failures</td></tr>
+        <tr><td class="k">ignoreExceptions</td><td>—</td><td>e.g. BusinessValidationException</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>Retry, RateLimiter, Bulkhead</h4>
+      <table class="cs-table">
+        <tr><th>Setting</th><th>Value</th></tr>
+        <tr><td class="k">retry.maxAttempts</td><td>3</td></tr>
+        <tr><td class="k">retry.waitDuration</td><td>500ms</td></tr>
+        <tr><td class="k">retry.enableExponentialBackoff</td><td>true</td></tr>
+        <tr><td class="k">retry.exponentialBackoffMultiplier</td><td>2</td></tr>
+        <tr><td class="k">retry.retryExceptions</td><td>IOException, TimeoutException</td></tr>
+        <tr><td class="k">rateLimiter.limitForPeriod</td><td>50 req</td></tr>
+        <tr><td class="k">rateLimiter.limitRefreshPeriod</td><td>1s</td></tr>
+        <tr><td class="k">rateLimiter.timeoutDuration</td><td>0s</td></tr>
+        <tr><td class="k">bulkhead.maxConcurrentCalls</td><td>25</td></tr>
+        <tr><td class="k">bulkhead.maxWaitDuration</td><td>0ms</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>Annotation Usage Order</h4>
+      <table class="cs-table">
+        <tr><th>Layer</th><th>Annotation</th><th>Why this order</th></tr>
+        <tr><td class="k">1 (outermost)</td><td>@RateLimiter</td><td>Reject early before acquiring resources</td></tr>
+        <tr><td class="k">2</td><td>@CircuitBreaker</td><td>Fail fast if service known bad</td></tr>
+        <tr><td class="k">3</td><td>@Bulkhead</td><td>Limit concurrency to downstream</td></tr>
+        <tr><td class="k">4</td><td>@Retry</td><td>Retry transient failures</td></tr>
+        <tr><td class="k">5</td><td>@TimeLimiter</td><td>Bound total time (innermost)</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="cs-section">
+  <div class="cs-section-h">Spring Boot — application.yml Key Properties</div>
+  <div class="cs-grid">
+    <div class="cs-card"><h4>Server &amp; JPA</h4>
+      <table class="cs-table">
+        <tr><th>Property</th><th>Recommended value / notes</th></tr>
+        <tr><td class="k">server.port</td><td>8080 (8443 for HTTPS)</td></tr>
+        <tr><td class="k">server.shutdown</td><td>graceful — wait for in-flight requests</td></tr>
+        <tr><td class="k">spring.lifecycle.timeout-per-shutdown-phase</td><td>30s</td></tr>
+        <tr><td class="k">spring.jpa.open-in-view</td><td>false — always disable; avoid lazy loading in view layer</td></tr>
+        <tr><td class="k">spring.jpa.show-sql</td><td>false in prod; use logging.level for queries</td></tr>
+        <tr><td class="k">spring.jpa.properties.hibernate.default_batch_fetch_size</td><td>25 — N+1 defence</td></tr>
+        <tr><td class="k">spring.jpa.properties.hibernate.generate_statistics</td><td>false in prod; true in dev to catch N+1</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>Datasource &amp; HikariCP</h4>
+      <table class="cs-table">
+        <tr><th>Property</th><th>Recommended</th></tr>
+        <tr><td class="k">spring.datasource.hikari.maximum-pool-size</td><td>10–20 per instance</td></tr>
+        <tr><td class="k">spring.datasource.hikari.minimum-idle</td><td>5</td></tr>
+        <tr><td class="k">spring.datasource.hikari.connection-timeout</td><td>30000 (30s)</td></tr>
+        <tr><td class="k">spring.datasource.hikari.idle-timeout</td><td>600000 (10min)</td></tr>
+        <tr><td class="k">spring.datasource.hikari.max-lifetime</td><td>1800000 (30min)</td></tr>
+        <tr><td class="k">spring.datasource.hikari.leak-detection-threshold</td><td>60000 (1min)</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>Actuator &amp; Observability</h4>
+      <table class="cs-table">
+        <tr><th>Property</th><th>Recommended</th></tr>
+        <tr><td class="k">management.endpoints.web.exposure.include</td><td>health,info,prometheus,metrics</td></tr>
+        <tr><td class="k">management.endpoint.health.show-details</td><td>when-authorized (not always)</td></tr>
+        <tr><td class="k">management.health.db.enabled</td><td>true</td></tr>
+        <tr><td class="k">management.tracing.sampling.probability</td><td>0.1 in prod; 1.0 in dev</td></tr>
+        <tr><td class="k">spring.threads.virtual.enabled</td><td>true (Java 21+)</td></tr>
+        <tr><td class="k">logging.structured.format.console</td><td>ecs (JSON logging, Spring Boot 3.4+)</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>Kafka (Spring)</h4>
+      <table class="cs-table">
+        <tr><th>Property</th><th>Notes</th></tr>
+        <tr><td class="k">spring.kafka.consumer.auto-offset-reset</td><td>earliest for new groups; latest for live consumers</td></tr>
+        <tr><td class="k">spring.kafka.consumer.enable-auto-commit</td><td>false — commit manually after processing</td></tr>
+        <tr><td class="k">spring.kafka.producer.acks</td><td>all — safe; 1 = risk leader crash loss</td></tr>
+        <tr><td class="k">spring.kafka.producer.enable-idempotence</td><td>true (default Kafka 3+)</td></tr>
+        <tr><td class="k">spring.kafka.listener.ack-mode</td><td>MANUAL_IMMEDIATE for control</td></tr>
+        <tr><td class="k">spring.kafka.listener.concurrency</td><td>= number of partitions</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="cs-section">
+  <div class="cs-section-h">JPA / Hibernate Annotations Reference</div>
+  <div class="cs-grid">
+    <div class="cs-card"><h4>Entity Mapping</h4>
+      <table class="cs-table">
+        <tr><th>Annotation</th><th>Purpose</th></tr>
+        <tr><td class="k">@Entity + @Table</td><td>Maps class to DB table</td></tr>
+        <tr><td class="k">@Id + @GeneratedValue</td><td>Primary key; IDENTITY, SEQUENCE, UUID</td></tr>
+        <tr><td class="k">@Version</td><td>Optimistic locking column (int/Long); incremented on every update</td></tr>
+        <tr><td class="k">@Column(nullable=false)</td><td>DB constraint; also validates at JPA level</td></tr>
+        <tr><td class="k">@Embedded + @Embeddable</td><td>Value object mapped to same table columns</td></tr>
+        <tr><td class="k">@CreatedDate / @LastModifiedDate</td><td>Spring Data Auditing — needs @EnableJpaAuditing</td></tr>
+        <tr><td class="k">@Index (on @Table)</td><td>DDL index generation hint</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>Associations &amp; Fetch</h4>
+      <table class="cs-table">
+        <tr><th>Annotation</th><th>Default Fetch</th><th>Notes</th></tr>
+        <tr><td class="k">@ManyToOne</td><td>EAGER ⚠️</td><td>Change to LAZY always; eager = N+1</td></tr>
+        <tr><td class="k">@OneToMany</td><td>LAZY ✓</td><td>Use mappedBy; orphanRemoval as needed</td></tr>
+        <tr><td class="k">@ManyToMany</td><td>LAZY ✓</td><td>Avoid if possible — use join entity instead</td></tr>
+        <tr><td class="k">@BatchSize(size=25)</td><td>—</td><td>Hibernate IN-clause batching for collections</td></tr>
+        <tr><td class="k">@EntityGraph</td><td>—</td><td>Override fetch for specific queries</td></tr>
+        <tr><td class="k">@NamedEntityGraph</td><td>—</td><td>Declare graph on entity; reference by name</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>@Transactional Gotchas</h4>
+      <table class="cs-table">
+        <tr><th>Scenario</th><th>Behaviour</th></tr>
+        <tr><td class="k">Self-invocation</td><td>Proxy bypassed — @Transactional ignored. Inject self or use ApplicationContext.getBean()</td></tr>
+        <tr><td class="k">private method</td><td>Spring AOP cannot proxy — annotation silently ignored</td></tr>
+        <tr><td class="k">readOnly=true</td><td>Hint to provider; Hibernate skips dirty checking. Use for all read-only methods</td></tr>
+        <tr><td class="k">Propagation.REQUIRES_NEW</td><td>Suspends outer tx; starts new. Use for audit log that must commit even if outer tx rolls back</td></tr>
+        <tr><td class="k">rollbackFor</td><td>Default: only unchecked exceptions. Add rollbackFor=Exception.class if checked exceptions should rollback</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="cs-section">
+  <div class="cs-section-h">SQL — Essential Patterns for Enterprise</div>
+  <div class="cs-grid">
+    <div class="cs-card"><h4>Window Functions</h4>
+      <table class="cs-table">
+        <tr><th>Function</th><th>Use case</th></tr>
+        <tr><td class="k">ROW_NUMBER() OVER (PARTITION BY x ORDER BY y)</td><td>Deduplication, pagination, ranking</td></tr>
+        <tr><td class="k">RANK() / DENSE_RANK()</td><td>Ranking with/without gaps on ties</td></tr>
+        <tr><td class="k">LAG(col, 1) / LEAD(col, 1)</td><td>Previous/next row value in partition</td></tr>
+        <tr><td class="k">SUM(col) OVER (PARTITION BY x)</td><td>Running totals, subtotals without GROUP BY</td></tr>
+        <tr><td class="k">FIRST_VALUE / LAST_VALUE</td><td>First/last in window frame</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>CTEs &amp; UPSERT</h4>
+      <table class="cs-table">
+        <tr><th>Pattern</th><th>SQL</th></tr>
+        <tr><td class="k">CTE</td><td>WITH cte AS (SELECT...) SELECT * FROM cte — readable subqueries, recursive trees</td></tr>
+        <tr><td class="k">UPSERT (PG)</td><td>INSERT INTO t(...) VALUES(...) ON CONFLICT(id) DO UPDATE SET col = EXCLUDED.col</td></tr>
+        <tr><td class="k">UPSERT (MySQL)</td><td>INSERT INTO t(...) VALUES(...) ON DUPLICATE KEY UPDATE col = VALUES(col)</td></tr>
+        <tr><td class="k">SKIP LOCKED</td><td>SELECT ... FOR UPDATE SKIP LOCKED — queue pattern, no blocking</td></tr>
+        <tr><td class="k">EXPLAIN ANALYZE</td><td>Prefix any query; shows actual rows, time, index use (PostgreSQL)</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>Transaction Template (Java)</h4>
+      <table class="cs-table">
+        <tr><th>Pattern</th><th>Code</th></tr>
+        <tr><td class="k">Optimistic lock retry</td><td>catch ObjectOptimisticLockingFailureException → retry N times with fresh read</td></tr>
+        <tr><td class="k">Pessimistic lock</td><td>repo.findByIdWithLock(id) using @Lock(PESSIMISTIC_WRITE)</td></tr>
+        <tr><td class="k">Programmatic tx</td><td>TransactionTemplate.execute(status → { ... }) — finer control than @Transactional</td></tr>
+        <tr><td class="k">Read replica routing</td><td>AbstractRoutingDataSource → override determineCurrentLookupKey()</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="cs-section">
+  <div class="cs-section-h">Docker — Production Patterns</div>
+  <div class="cs-grid">
+    <div class="cs-card"><h4>Essential Build Commands</h4>
+      <table class="cs-table">
+        <tr><th>Command</th><th>Purpose</th></tr>
+        <tr><td class="k">docker build -t app:1.0 --no-cache .</td><td>Build image, force fresh layers</td></tr>
+        <tr><td class="k">docker buildx build --platform linux/amd64,linux/arm64</td><td>Multi-arch build (M1 Mac → AMD64 K8s)</td></tr>
+        <tr><td class="k">docker image inspect app:1.0</td><td>View layers, env vars, entrypoint</td></tr>
+        <tr><td class="k">docker scout cves app:1.0</td><td>CVE scan without pushing</td></tr>
+        <tr><td class="k">docker run --rm -it --entrypoint sh app:1.0</td><td>Debug image interactively</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>Dockerfile Best Practices</h4>
+      <table class="cs-table">
+        <tr><th>Rule</th><th>Why</th></tr>
+        <tr><td class="k">Multi-stage build</td><td>Build tools not in runtime image; smaller, less attack surface</td></tr>
+        <tr><td class="k">Use JRE not JDK at runtime</td><td>JDK is ~300MB; JRE ~150MB; no compiler in production</td></tr>
+        <tr><td class="k">Non-root USER</td><td>Required for OpenShift; security best practice</td></tr>
+        <tr><td class="k">COPY deps before src</td><td>Layer cache: deps rebuild only when pom.xml changes</td></tr>
+        <tr><td class="k">Use jarmode=layertools</td><td>Spring Boot layer extraction → optimal Docker cache</td></tr>
+        <tr><td class="k">EXPOSE (document only)</td><td>Does not open ports; use -p at runtime</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>Docker Compose (dev)</h4>
+      <table class="cs-table">
+        <tr><th>Pattern</th><th>Snippet</th></tr>
+        <tr><td class="k">Health check</td><td>healthcheck: test: [CMD, curl, -f, http://localhost:8080/actuator/health]</td></tr>
+        <tr><td class="k">Depends on healthy</td><td>depends_on: db: condition: service_healthy</td></tr>
+        <tr><td class="k">Named volume</td><td>volumes: pgdata:/var/lib/postgresql/data — survives container restart</td></tr>
+        <tr><td class="k">Override file</td><td>docker-compose.override.yml for local dev; auto-merged</td></tr>
+        <tr><td class="k">Profiles</td><td>profiles: [tools] — only start with --profile tools flag</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="cs-section">
+  <div class="cs-section-h">OpenShift vs Kubernetes — Key Differences</div>
+  <div class="cs-grid">
+    <div class="cs-card" style="grid-column: 1 / -1;"><h4>Feature Comparison</h4>
+      <table class="cs-table">
+        <tr><th>Feature</th><th>Vanilla Kubernetes</th><th>OpenShift (OCP)</th></tr>
+        <tr><td class="k">Pod Security</td><td>PodSecurityAdmission (PSA) — namespaced labels</td><td>Security Context Constraints (SCCs) — more granular, cluster-scoped</td></tr>
+        <tr><td class="k">Default run-as-root</td><td>Allowed unless PSA enforces restricted</td><td>Blocked by default SCC 'restricted'. Must use numeric non-root UID</td></tr>
+        <tr><td class="k">Routes / Ingress</td><td>Ingress (requires controller)</td><td>OpenShift Route (built-in HAProxy; TLS termination native)</td></tr>
+        <tr><td class="k">Image Registry</td><td>External (ECR, DockerHub, Artifactory)</td><td>Built-in internal registry at image-registry.openshift-image-registry.svc</td></tr>
+        <tr><td class="k">CI/CD</td><td>Tekton (optional install)</td><td>OpenShift Pipelines (Tekton) built-in; OpenShift GitOps (ArgoCD) built-in</td></tr>
+        <tr><td class="k">Build system</td><td>External (GitHub Actions, Jenkins)</td><td>BuildConfig (S2I — Source-to-Image); builds inside the cluster</td></tr>
+        <tr><td class="k">CLI</td><td>kubectl</td><td>oc (superset of kubectl; adds login, project, new-app, expose commands)</td></tr>
+        <tr><td class="k">Projects</td><td>Namespaces</td><td>Projects = Namespaces + RBAC defaults; oc new-project creates both</td></tr>
+        <tr><td class="k">OperatorHub</td><td>Manual operator install</td><td>Integrated OperatorHub in web console; OLM (Operator Lifecycle Manager) built-in</td></tr>
+        <tr><td class="k">Monitoring</td><td>Install Prometheus stack separately</td><td>Built-in cluster monitoring (Prometheus + Alertmanager + Grafana)</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>Spring Boot on OpenShift — Gotchas</h4>
+      <table class="cs-table">
+        <tr><th>Issue</th><th>Fix</th></tr>
+        <tr><td class="k">Container runs as root</td><td>Add USER 1001 in Dockerfile; use numeric UID not username</td></tr>
+        <tr><td class="k">Port 8080 not bindable</td><td>Ports &lt;1024 need privilege; 8080 fine; never use 80/443 directly</td></tr>
+        <tr><td class="k">Read-only /tmp</td><td>Mount emptyDir at /tmp if app writes temp files</td></tr>
+        <tr><td class="k">SCC 'restricted' blocks volume type</td><td>Use emptyDir, configMap, secret, PVC — not hostPath</td></tr>
+        <tr><td class="k">oc login token expires</td><td>Use ServiceAccount token in CI, not personal token</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="cs-section">
+  <div class="cs-section-h">IBM Stack Reference</div>
+  <div class="cs-grid">
+    <div class="cs-card"><h4>WebSphere Liberty / Open Liberty</h4>
+      <table class="cs-table">
+        <tr><th>Concept</th><th>Notes</th></tr>
+        <tr><td class="k">server.xml features</td><td>jaxrs-3.0, jdbc-4.3, mpHealth-4.0, mpMetrics-5.0, openidConnectClient-1.0</td></tr>
+        <tr><td class="k">Variable substitution</td><td>${env.DB_URL} in server.xml reads from env vars or server.env file</td></tr>
+        <tr><td class="k">Liberty Maven Plugin</td><td>liberty:dev for hot reload; liberty:package for uber-jar or Docker layer</td></tr>
+        <tr><td class="k">Container-ready</td><td>icr.io/appcafe/open-liberty:kernel-slim-java21-openj9-ubi base image</td></tr>
+        <tr><td class="k">OpenJ9 GC policy</td><td>gencon (default, like G1), balanced, optthruput (like Parallel), metronome (soft RT)</td></tr>
+        <tr><td class="k">vs Tomcat</td><td>Liberty supports full Jakarta EE; Tomcat is Servlet/JSP only. Liberty lighter than WAS full profile</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>IBM MQ (JMS)</h4>
+      <table class="cs-table">
+        <tr><th>Concept</th><th>Notes</th></tr>
+        <tr><td class="k">Queue vs Topic</td><td>Queue: point-to-point; Topic: pub-sub with durable subscriptions</td></tr>
+        <tr><td class="k">QM (Queue Manager)</td><td>MQ server instance; manages queues, channels, security</td></tr>
+        <tr><td class="k">Channel</td><td>Communication path between QMs or app and QM (SVRCONN for apps)</td></tr>
+        <tr><td class="k">Spring JMS</td><td>@JmsListener + JmsTemplate; IBM MQ Spring Boot Starter auto-configures</td></tr>
+        <tr><td class="k">Exactly-once</td><td>MQ + XA transactions across MQ + DB in same 2PC transaction</td></tr>
+        <tr><td class="k">Dead Letter Queue</td><td>SYSTEM.DEAD.LETTER.QUEUE — messages that can't be delivered</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>IBM Db2 Quick Reference</h4>
+      <table class="cs-table">
+        <tr><th>Concept</th><th>Notes</th></tr>
+        <tr><td class="k">Schemas</td><td>Default schema = username. SET SCHEMA or fully qualify: schema.table</td></tr>
+        <tr><td class="k">Isolation levels</td><td>CS (cursor stability ≈ RC), RS (read stability ≈ RR), RR (repeatable read), UR (uncommitted read)</td></tr>
+        <tr><td class="k">FETCH FIRST N ROWS ONLY</td><td>Db2 equivalent of LIMIT N (LIMIT not supported in older Db2)</td></tr>
+        <tr><td class="k">IDENTITY column</td><td>GENERATED ALWAYS AS IDENTITY — Db2 autoincrement</td></tr>
+        <tr><td class="k">EXPLAIN TABLE</td><td>Populate then EXPLAIN query; check PLANTYPE and PREFETCH</td></tr>
+        <tr><td class="k">REORGCHK / RUNSTATS</td><td>Db2 equivalent of ANALYZE — update statistics, check for REORG need</td></tr>
+        <tr><td class="k">Spring Boot driver</td><td>com.ibm.db2.jcc.DB2Driver; spring.datasource.url=jdbc:db2://host:50000/dbname</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="cs-section">
+  <div class="cs-section-h">Design Patterns — GoF Quick Reference</div>
+  <div class="cs-grid">
+    <div class="cs-card"><h4>Creational</h4>
+      <table class="cs-table">
+        <tr><th>Pattern</th><th>Use when</th><th>Spring example</th></tr>
+        <tr><td class="k">Singleton</td><td>One instance per context</td><td>@Component (default scope)</td></tr>
+        <tr><td class="k">Factory Method</td><td>Subclass decides which object to create</td><td>BeanFactory</td></tr>
+        <tr><td class="k">Abstract Factory</td><td>Family of related objects without concrete classes</td><td>DataSourceFactory</td></tr>
+        <tr><td class="k">Builder</td><td>Complex object construction step by step</td><td>WebClient.builder(), ResponseEntity.ok()</td></tr>
+        <tr><td class="k">Prototype</td><td>Clone an existing object</td><td>@Scope("prototype")</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>Structural</h4>
+      <table class="cs-table">
+        <tr><th>Pattern</th><th>Use when</th><th>Spring example</th></tr>
+        <tr><td class="k">Adapter</td><td>Incompatible interfaces must work together</td><td>ACL adapters, HandlerAdapter</td></tr>
+        <tr><td class="k">Decorator</td><td>Add behaviour without subclassing</td><td>BeanPostProcessor, HttpSecurity</td></tr>
+        <tr><td class="k">Façade</td><td>Simple interface over complex subsystem</td><td>JdbcTemplate over JDBC API</td></tr>
+        <tr><td class="k">Proxy</td><td>Control access; add cross-cutting concerns</td><td>Spring AOP (@Transactional, @Cacheable)</td></tr>
+        <tr><td class="k">Composite</td><td>Tree structures treated uniformly</td><td>SecurityFilterChain</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>Behavioural</h4>
+      <table class="cs-table">
+        <tr><th>Pattern</th><th>Use when</th><th>Spring example</th></tr>
+        <tr><td class="k">Strategy</td><td>Interchangeable algorithms</td><td>PaymentStrategy, Comparator</td></tr>
+        <tr><td class="k">Observer</td><td>Notify dependents on state change</td><td>@EventListener, ApplicationEventPublisher</td></tr>
+        <tr><td class="k">Template Method</td><td>Define skeleton; subclasses fill steps</td><td>JdbcTemplate, AbstractController</td></tr>
+        <tr><td class="k">Chain of Responsibility</td><td>Pass request through handlers</td><td>Servlet FilterChain, SecurityFilterChain</td></tr>
+        <tr><td class="k">Command</td><td>Encapsulate request as object (undo, queue)</td><td>Saga steps, CompletableFuture tasks</td></tr>
+        <tr><td class="k">State</td><td>Behaviour changes based on internal state</td><td>Order state machine, Circuit Breaker states</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="cs-section">
+  <div class="cs-section-h">Security — Quick Reference Checklist</div>
+  <div class="cs-grid">
+    <div class="cs-card"><h4>Spring Security — OAuth2 Resource Server</h4>
+      <table class="cs-table">
+        <tr><th>Config</th><th>Snippet / Notes</th></tr>
+        <tr><td class="k">JWT validation</td><td>spring.security.oauth2.resourceserver.jwt.jwk-set-uri=https://idp/.well-known/jwks.json</td></tr>
+        <tr><td class="k">Issuer validation</td><td>spring.security.oauth2.resourceserver.jwt.issuer-uri=https://idp/realm</td></tr>
+        <tr><td class="k">Method security</td><td>@EnableMethodSecurity on @Configuration class</td></tr>
+        <tr><td class="k">CORS config</td><td>http.cors(c -> c.configurationSource(corsSource)); CorsConfiguration.setAllowedOrigins()</td></tr>
+        <tr><td class="k">CSRF for APIs</td><td>http.csrf(AbstractHttpConfigurer::disable) for stateless JWT APIs</td></tr>
+        <tr><td class="k">Security headers</td><td>http.headers(h -> h.frameOptions(fo -> fo.deny()).xssProtection(...)) — auto in Spring Security</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>API Security Checklist</h4>
+      <table class="cs-table">
+        <tr><th>Check</th><th>Status</th></tr>
+        <tr><td class="k">Validate JWT iss + aud + exp</td><td>Not just signature</td></tr>
+        <tr><td class="k">Object-level auth on every endpoint</td><td>BOLA — don't skip this</td></tr>
+        <tr><td class="k">Rate limiting per user/IP</td><td>Bucket4j or API gateway</td></tr>
+        <tr><td class="k">No secrets in code / git</td><td>git-secrets pre-commit hook</td></tr>
+        <tr><td class="k">TLS everywhere</td><td>Including internal services</td></tr>
+        <tr><td class="k">Dependency CVE scan</td><td>Dependabot / OWASP dependency-check</td></tr>
+        <tr><td class="k">Structured error responses</td><td>No stack traces to clients</td></tr>
+        <tr><td class="k">Input validation at boundary</td><td>Bean Validation (@Valid) + sanitise</td></tr>
+        <tr><td class="k">Actuator endpoints secured</td><td>Expose only health, info externally</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>GDPR Compliance Checklist</h4>
+      <table class="cs-table">
+        <tr><th>Requirement</th><th>Implementation approach</th></tr>
+        <tr><td class="k">Right to erasure</td><td>Cryptographic erasure (encrypt PII, delete key) or tombstone pattern</td></tr>
+        <tr><td class="k">Data minimisation</td><td>Collect only what's needed; document purpose</td></tr>
+        <tr><td class="k">Retention limits</td><td>TTL on PII fields; archival with anonymisation</td></tr>
+        <tr><td class="k">Audit trail</td><td>Log all PII access (who read what, when)</td></tr>
+        <tr><td class="k">Data residency</td><td>EU data stays in EU regions; document in architecture</td></tr>
+        <tr><td class="k">Consent tracking</td><td>Immutable consent log with timestamp, version</td></tr>
+        <tr><td class="k">Breach notification</td><td>72h to DPA; playbook prepared</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="cs-section">
+  <div class="cs-section-h">Architecture Decision Record (ADR) Template</div>
+  <div class="cs-grid">
+    <div class="cs-card" style="grid-column: 1 / -1;"><h4>ADR Structure — What to write in each section</h4>
+      <table class="cs-table">
+        <tr><th>Section</th><th>What to write</th><th>Example</th></tr>
+        <tr><td class="k">Title</td><td>Short, factual, past tense verb</td><td>ADR-007: Chose Kafka over RabbitMQ for event streaming</td></tr>
+        <tr><td class="k">Status</td><td>Proposed / Accepted / Deprecated / Superseded by ADR-X</td><td>Accepted (2024-03-15)</td></tr>
+        <tr><td class="k">Context</td><td>Why this decision was needed; constraints; forces at play</td><td>Need to stream 50k events/sec; multiple consumers; replay needed; team unfamiliar with Kafka</td></tr>
+        <tr><td class="k">Decision</td><td>What was decided and why (the positive case)</td><td>Use Kafka. Replay requirement rules out RabbitMQ. Volume justifies operational overhead.</td></tr>
+        <tr><td class="k">Alternatives considered</td><td>What was rejected and why (important for future readers)</td><td>RabbitMQ: rejected because no native replay. ActiveMQ: rejected — SYNTAX not investing in it. AWS SQS: rejected — multi-cloud requirement.</td></tr>
+        <tr><td class="k">Consequences</td><td>What becomes easier, harder, or different as a result</td><td>+ Replay capability. + Consumer group model. − Ops team needs Kafka training. − At-least-once requires idempotent consumers.</td></tr>
+        <tr><td class="k">Revisit trigger</td><td>Conditions under which this should be reconsidered</td><td>Revisit if event volume drops below 1k/s or if team adopts AWS-only strategy.</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="cs-section">
+  <div class="cs-section-h">Regex — Common Validation Patterns</div>
+  <div class="cs-grid">
+    <div class="cs-card"><h4>Java Regex Patterns</h4>
+      <table class="cs-table">
+        <tr><th>Pattern</th><th>Regex</th></tr>
+        <tr><td class="k">UUID</td><td>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}</td></tr>
+        <tr><td class="k">Email (RFC 5321)</td><td>[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}</td></tr>
+        <tr><td class="k">ISO 8601 Date</td><td>\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?Z?)?</td></tr>
+        <tr><td class="k">Phone (intl)</td><td>\+?[1-9]\d{7,14}</td></tr>
+        <tr><td class="k">IBAN (basic)</td><td>[A-Z]{2}[0-9]{2}[A-Z0-9]{4,30}</td></tr>
+        <tr><td class="k">Semantic version</td><td>\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?</td></tr>
+        <tr><td class="k">IPv4 address</td><td>(\d{1,3}\.){3}\d{1,3}</td></tr>
+        <tr><td class="k">JWT (structural)</td><td>[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+\.[A-Za-z0-9\-_]+</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>Bean Validation — Key Annotations</h4>
+      <table class="cs-table">
+        <tr><th>Annotation</th><th>Validates</th></tr>
+        <tr><td class="k">@NotNull / @NotBlank</td><td>Not null / not null and not whitespace-only</td></tr>
+        <tr><td class="k">@Size(min, max)</td><td>String length, collection size</td></tr>
+        <tr><td class="k">@Min / @Max</td><td>Numeric range</td></tr>
+        <tr><td class="k">@Email</td><td>Valid email format</td></tr>
+        <tr><td class="k">@Pattern(regexp)</td><td>Custom regex</td></tr>
+        <tr><td class="k">@Positive / @PositiveOrZero</td><td>Numeric sign</td></tr>
+        <tr><td class="k">@Future / @FutureOrPresent</td><td>Date/time constraints</td></tr>
+        <tr><td class="k">@Valid (on field/param)</td><td>Cascade validation into nested objects</td></tr>
+      </table>
+    </div>
+    <div class="cs-card"><h4>Maven / Gradle Quick Commands</h4>
+      <table class="cs-table">
+        <tr><th>Task</th><th>Maven</th><th>Gradle</th></tr>
+        <tr><td class="k">Build + test</td><td>mvn verify</td><td>./gradlew build</td></tr>
+        <tr><td class="k">Skip tests</td><td>mvn package -DskipTests</td><td>./gradlew assemble</td></tr>
+        <tr><td class="k">Dependency tree</td><td>mvn dependency:tree</td><td>./gradlew dependencies</td></tr>
+        <tr><td class="k">Effective POM</td><td>mvn help:effective-pom</td><td>./gradlew :help --task</td></tr>
+        <tr><td class="k">Update versions</td><td>mvn versions:use-latest-releases</td><td>./gradlew dependencyUpdates</td></tr>
+        <tr><td class="k">CVE check</td><td>mvn dependency-check:check</td><td>./gradlew dependencyCheckAnalyze</td></tr>
+        <tr><td class="k">Native image</td><td>mvn -Pnative native:compile</td><td>./gradlew nativeCompile</td></tr>
       </table>
     </div>
   </div>
